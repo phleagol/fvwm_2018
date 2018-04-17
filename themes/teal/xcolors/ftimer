@@ -1,0 +1,8 @@
+#!/bin/sh
+addcolor <<EOF-
+    *color0  #00B3B3
+    *color1  #0F9999
+    *color2  #198080
+    *color3  #1F6666
+    *color4  #264D4D
+EOF

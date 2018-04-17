@@ -1,0 +1,22 @@
+## vim: syntax=fvwm
+
+InfoStoreAdd opacity  60
+InfoStoreAdd mm_sidepic_opacity  .6
+
+
+##  Menustyle Colorsets
+
+Colorset $[infostore.cs_menu_inactive] fg gray75, bg gray9,  sh #006666, hi #006666, \
+        RootTransparent Buffer, Tint gray9 $[infostore.opacity]
+Colorset $[infostore.cs_menu_active]   fg gray75, bg gray20, sh #006666, hi #006666, \
+        RootTransparent Buffer, Tint gray9 $[infostore.opacity]
+Colorset $[infostore.cs_menu_title]    fg gray75, bg gray9,  sh #006666, hi #006666, \
+        RootTransparent Buffer, Tint gray9 $[infostore.opacity]
+
+
+
+
+
+
+
+

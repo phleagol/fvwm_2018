@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+use utf8 ;
+use v5.24 ;
+use strict ;
+use warnings ;
+no Moo::sification ;
+
+use lib `fvwm-perllib dir` ;
+use lib "$ENV{FVWM_LIB}" ;
+
+use FVWM::Module ;
+use FVWM::Mount ;
+use Data::Dump qw( dump ) ;
+
+##  1] Start the fvwm module, 2] retrieve the fvwm config, 
+##  3] start the mount module, and 4] run the mount menu.
+
+my $modname = "FvwmMount" ;
+my $module  = new FVWM::Module( Name  => $modname ) ;
+my $config  = $module->track("ModuleConfig")->data ;
+my $mount = FVWM::Mount->new({ Name => $modname, Module => $module, %$config, }) ;
+$mount->menu ;
+
+
+##  To do "use lib path" differently, better, look hre...
+##  https://perlmaven.com/how-to-create-a-perl-module-for-code-reuse
+
+#use Path::Tiny qw( path ) ;
+#use lib path($0)->realpath->parent->child('lib')->stringify ;
+
+#use File::Basename qw( dirname ) ;
+#use Cwd  qw( abs_path ) ;
+#use lib `fvwm-perllib dir`;
+#use lib dirname( abs_path $0) . '/lib' ;
+

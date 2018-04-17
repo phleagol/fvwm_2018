@@ -1,0 +1,11 @@
+## vim: syntax=fvwm
+
+
+# Style ufetch          Title, State $[infostore.state_titledwindow] 
+# Style fvwm-run-dialog Title, State $[infostore.state_titledwindow] 
+
+Style MainTmux        !Title, !State $[infostore.state_titledwindow] 
+Style newsbeuter      !Title, !State $[infostore.state_titledwindow] 
+
+
+

@@ -1,0 +1,137 @@
+## vim: syntax=fvwm
+
+InfoStoreAdd decor_borderwidth   2
+InfoStoreAdd decor_title_height  18
+
+##  Window Button Locations [1--Title----642]
+Mouse 1 1 A OpenWindowMenu
+Mouse 1 6 A -
+Mouse 1 4 A -
+Mouse 1 2 A CloseWindow
+
+##  DECOR COLORSETS
+
+##  Titlebar : fg == text color, bg == base color
+Colorset $[infostore.cs_decor_inactive]        fg gray80, bg #006666
+Colorset $[infostore.cs_decor_active]          fg gray80, bg #008C8C
+##  Borders 
+Colorset $[infostore.cs_decor_border_inactive] fg #006666, bg #006666, hi #006666, sh #006666
+Colorset $[infostore.cs_decor_border_active]   fg #008C8C, bg #008C8C, hi #008C8C, sh #008C8C 
+
+DestroyDecor TealDecor
+AddToDecor   TealDecor
++ TitleStyle Centered Height $[infostore.decor_title_height] -- Flat
++ ButtonStyle All -- UseTitleStyle Flat
++ AddButtonStyle 1 MiniIcon
++ BorderStyle Simple -- Flat 
+
+##  DECOR INACTIVE
+
+DestroyDecor TealURxvtDecorInactive
+AddToDecor   TealURxvtDecorInactive
++ BorderStyle Simple -- HiddenHandles NoInset Flat
++ TitleStyle LeftJustified Height $[infostore.decor_title_height]
++ TitleStyle MultiPixmap \
+        LeftEnd     AdjustedPixmap $./images/left-end-inactive.png, \
+        LeftMain    TiledPixmap    $./images/left-main-inactive.png, \
+        UnderText   AdjustedPixmap $./images/under-text-inactive.png, \
+        RightOfText AdjustedPixmap $./images/right-of-text-inactive.png, \
+        RightMain   TiledPixmap    $./images/right-main-inactive.png
++ ButtonStyle 1 MiniIcon
++ ButtonStyle 2 (Pixmap $./images/close-button.png)
++ AddTitleStyle -- Flat
++ AddButtonStyle All -- UseTitleStyle Flat
+
+##  DECOR ACTIVE
+
+DestroyDecor TealURxvtDecorActive
+AddToDecor   TealURxvtDecorActive
++ BorderStyle Simple -- HiddenHandles NoInset Flat
++ TitleStyle LeftJustified Height $[infostore.decor_title_height]
++ TitleStyle MultiPixmap \
+        LeftEnd     AdjustedPixmap $./images/left-end-active.png, \
+        LeftMain    TiledPixmap    $./images/left-main-active.png, \
+        UnderText   AdjustedPixmap $./images/under-text-active.png, \
+        RightOfText AdjustedPixmap $./images/right-of-text-active.png, \
+        RightMain   TiledPixmap    $./images/right-main-active.png
++ ButtonStyle 1 MiniIcon
++ ButtonStyle 2 (Pixmap $./images/close-button.png)
++ AddTitleStyle -- Flat
++ AddButtonStyle All -- UseTitleStyle Flat
+
+DestroyStyle Qwerty
+
+Style * Colorset $[infostore.cs_decor_inactive]
+Style * HilightColorset $[infostore.cs_decor_inactive]
+Style * BorderColorset $[infostore.cs_decor_border_inactive]
+Style * HilightBorderColorset $[infostore.cs_decor_border_inactive]
+Style * BorderWidth $[infostore.decor_borderwidth]
+Style * HandleWidth $[infostore.decor_borderwidth]
+Style * MWMBorder, FirmBorder, !Title 
+Style * Borders, State $[infostore.state_borderedwindow] 
+Style * Font $[infostore.terminus16bold]
+Style * !Button 2, !Button 4, !Button 6, Button 1
+Style * UseDecor TealDecor
+Style URxvt Button 2
+Style URxvt Title, State $[infostore.state_titledwindow]
+Style URxvt UseDecor TealURxvtDecorInactive
+# Style mcrn.png Button 2
+# Style mcrn.png Title, State $[infostore.state_titledwindow]
+# Style mcrn.png UseDecor TealURxvtDecorInactive
+# Style mcrn.png TitleFormat %r
+
+DestroyFunc ColorInactiveFunc
+AddToFunc   ColorInactiveFunc
++ I ThisWindow WindowStyle Colorset               $[infostore.cs_decor_inactive]
++ I ThisWindow WindowStyle HilightColorset        $[infostore.cs_decor_inactive]
++ I ThisWindow WindowStyle BorderColorset         $[infostore.cs_decor_border_inactive] 
++ I ThisWindow WindowStyle HilightBorderColorset  $[infostore.cs_decor_border_inactive] 
++ I ThisWindow (URxvt)    ChangeDecor TealURxvtDecorInactive
+#+ I ThisWindow (mcrn.png) ChangeDecor TealURxvtDecorInactive
++ I UpdateStyles
+
+DestroyFunc ColorActiveFunc
+AddToFunc   ColorActiveFunc
++ I ThisWindow WindowStyle Colorset               $[infostore.cs_decor_active]
++ I ThisWindow WindowStyle HilightColorset        $[infostore.cs_decor_active]
++ I ThisWindow WindowStyle BorderColorset         $[infostore.cs_decor_border_active] 
++ I ThisWindow WindowStyle HilightBorderColorset  $[infostore.cs_decor_border_active] 
++ I ThisWindow (URxvt)    ChangeDecor TealURxvtDecorActive
+#+ I ThisWindow (mcrn.png) ChangeDecor TealURxvtDecorActive
++ I UpdateStyles
+
+# All (Qwerty) Close
+# Schedule 3000 Exec urxvt -b 8 -n Qwerty -T Qwerty
+
+# ##  ACTIVE
+# Style * Colorset $[infostore.cs_decor_active], \
+#         HilightColorset $[infostore.cs_decor_active], \
+#         BorderColorset $[infostore.cs_decor_border_active], \
+#         HilightBorderColorset $[infostore.cs_decor_border_active], \
+#         BorderWidth $[infostore.decor_borderwidth], \
+#         HandleWidth $[infostore.decor_borderwidth], \
+#         MWMBorder, FirmBorder, \
+#         Title, Font $[infostore.terminus16bold], \
+#         Button 2, !Button 4, !Button 6, !Button 1,  \
+#         UseDecor TealDecorActive
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

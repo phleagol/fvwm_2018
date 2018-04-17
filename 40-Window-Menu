@@ -1,0 +1,168 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+##  
+##  ╻ ╻╻┏┓╻╺┳┓┏━┓╻ ╻   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┃╻┃┃┃┗┫ ┃┃┃ ┃┃╻┃   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ┗┻┛╹╹ ╹╺┻┛┗━┛┗┻┛   ╹ ╹┗━╸╹ ╹┗━┛
+
+####  NORMAL WINDOW MENU  
+
+DestroyMenu NormalWindowMenu
+AddToMenu   NormalWindowMenu
++ "$[infostore.icon_wm_window_maximize]&Maximize	Alt-F10" Schedule 300 ToggleMaximize animate
++ "$[infostore.icon_wm_window_iconify]Iconify	Alt-F9" IconifyWindow
++ "$[infostore.icon_wm_window_iconify]Iconify&Except" IconifyExcept
++ "$[infostore.icon_wm_window_iconify]Iconify&All" IconifyAll
++ "" Nop
++ "&Layers	>" PopUp LayerMenu
++ "&Styles	>" PopUp StyleMenu
++ "$[infostore.icon_wm_window_move]Send &To	>" PopUp MoveToDesktopMenu
++ "" Nop
++ "$[infostore.icon_wm_scrot]Screensh&ot	Alt-Print" Schedule 1000 MaimWindow
++ "$[infostore.icon_wm_identify]&Identify	Win-I" Module FvwmIdent
++ "" Nop
++ "$[infostore.icon_wm_application_exit]&Close	Alt-F4" CloseWindow
+
+####  ICONIC WINDOW MENU
+
+CopyMenuStyle * IconicWindowMenuStyle
+MenuStyle IconicWindowMenuStyle Font $[infostore.font_small_bold]
+MenuStyle IconicWindowMenuStyle BorderWidth $[infostore.thumb_borderwidth]
+
+DestroyMenu IconicWindowMenu
+AddToMenu   IconicWindowMenu
++ "$[infostore.icon_wm_window_deiconify]&DeIconify"    DeIconifyWindow
++ "$[infostore.icon_wm_window_deiconify]DeIconify&All" DeIconifyAll
++ "$[infostore.icon_wm_identify]&Identify"             Module FvwmIdent
++ "$[infostore.icon_wm_application_exit]&Close"        CloseWindow
+
+ChangeMenuStyle IconicWindowMenuStyle IconicWindowMenu
+
+####  MOVE TO DESKTOP SUBMENU
+
+DestroyMenu MoveToDesktopMenu
+PipeRead ' for zz in $(seq $[infostore.desk_min] $[infostore.desk_max]) ; \
+    do echo "AddToMenu MoveToDesktopMenu \
+    \\"$[infostore.icon_wm_window_move]$zz\\" MoveSwitch $zz"   ; done '
+
+####  LAYER SUBMENU
+
+DestroyMenu LayerMenu
+AddToMenu LayerMenu
++ DynamicPopupAction MakeLayerMenu
+
+CopyMenuStyle * LayerMenuStyle
+MenuStyle LayerMenuStyle ItemFormat "%|%13.13i%.15l%.15r%|"
+MenuStyle LayerMenuStyle Font $[infostore.font_small_bold]
+
+ChangeMenuStyle LayerMenuStyle LayerMenu
+
+DestroyFunc MakeLayerMenu
+AddToFunc MakeLayerMenu 
++ I DestroyMenu recreate LayerMenu
++ I ThisWindow (Layer $[infostore.toplayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_tick]&Top Layer	$[infostore.toplayer]" Nop
++ I ThisWindow (!Layer $[infostore.toplayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_null]&Top Layer	$[infostore.toplayer]" WindowStyle StaysOnTop
++ I ThisWindow (Layer $[infostore.putlayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_tick]&Put Layer	$[infostore.putlayer]" Nop
++ I ThisWindow (!Layer $[infostore.putlayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_null]&Put Layer	$[infostore.putlayer]" WindowStyle StaysPut
++ I ThisWindow (Layer $[infostore.iconiclayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_tick]&Iconic Layer	$[infostore.iconiclayer]" Nop
++ I ThisWindow (!Layer $[infostore.iconiclayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_null]&Iconic Layer	$[infostore.iconiclayer]" \
+    SetLayer $[infostore.iconiclayer]
++ I ThisWindow (Layer $[infostore.bottomlayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_tick]&Bottom Layer	$[infostore.bottomlayer]" Nop
++ I ThisWindow (!Layer $[infostore.bottomlayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_null]&Bottom Layer	$[infostore.bottomlayer]" WindowStyle StaysOnBottom
++ I ThisWindow (Layer 0) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_tick]&Zero Layer	0" Nop
++ I ThisWindow (!Layer $[infostore.bottomlayer]) AddToMenu LayerMenu \
+    "$[infostore.icon_wm_null]&Zero Layer	0" SetLayer 0
+
+####  STYLE SUBMENU
+
+DestroyMenu StyleMenu
+AddToMenu   StyleMenu
++ DynamicPopupAction MakeStyleMenu
+
+DestroyFunc MakeStyleMenu
+AddToFunc   MakeStyleMenu 
++ I DestroyMenu recreate StyleMenu
++ I ThisWindow ( State $[infostore.state_titledwindow]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]&Titled" Schedule 300 ToggleTitle
++ I ThisWindow (!State $[infostore.state_titledwindow]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]&Titled" Schedule 300 ToggleTitle
++ I ThisWindow ( State $[infostore.state_borderedwindow])  \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]&Border"         ToggleBorders
++ I ThisWindow (!State $[infostore.state_borderedwindow]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]&Border"         ToggleBorders
++ I ThisWindow (Sticky)  \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]Sticky" Schedule 300 WindowStyle !Sticky
++ I ThisWindow (!Sticky) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]Sticky" Schedule 300 WindowStyle Sticky
++ I ThisWindow ( AcceptsFocus) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]NeverFocus"     ToggleFocusable
++ I ThisWindow (!AcceptsFocus) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]NeverFocus"     ToggleFocusable
++ I ThisWindow ( FixedSize) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]FixedSize"      ToggleFixedSize
++ I ThisWindow (!FixedSize) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]FixedSize"      ToggleFixedSize
++ I ThisWindow ( FixedPosition) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]FixedPosition"  ToggleFixedPosition
++ I ThisWindow (!FixedPosition) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]FixedPosition"  ToggleFixedPosition
++ I ThisWindow ( State $[infostore.state_windowlistskip]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]WindowListSkip" ToggleWindowListSkip
++ I ThisWindow (!State $[infostore.state_windowlistskip]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]WindowListSkip" ToggleWindowListSkip
++ I ThisWindow ( Maximizable) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]Maximizable"    ToggleMaximizable
++ I ThisWindow (!Maximizable) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]Maximizable"    ToggleMaximizable
++ I ThisWindow ( Iconifiable) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]Iconifiable"    ToggleIconifiable
++ I ThisWindow (!Iconifiable) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]Iconifiable"    ToggleIconifiable
++ I ThisWindow ( State $[infostore.state_autoiconify]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_tick]AutoIconify"    ToggleAutoIconify
++ I ThisWindow (!State $[infostore.state_autoiconify]) \
+        AddToMenu StyleMenu "$[infostore.icon_wm_null]AutoIconify"    ToggleAutoIconify
+
+
+
+# CopyMenuStyle * NormalWindowMenuStyle
+# MenuStyle NormalWindowMenuStyle ItemFormat "%|%13.13i%.15l%.15r%|"
+# MenuStyle NormalWindowMenuStyle Font $[infostore.font_small_bold]
+
+#  DestroyMenu NormalWindowMenu
+#  AddToMenu   NormalWindowMenu
+#  + DynamicPopupAction MakeNormalWindowMenu
+#  
+#  ChangeMenuStyle NormalWindowMenuStyle NormalWindowMenu
+
+
+
+#DestroyMenu IconicWindowMenu
+#AddToMenu   IconicWindowMenu
+#+ DynamicPopupAction MakeIconicWindowMenu
+
+# DestroyFunc MakeIconicWindowMenu
+# AddToFunc   MakeIconicWindowMenu
+# + I DestroyMenu recreate IconicWindowMenu
+# + I AddToMenu IconicWindowMenu "$[infostore.icon_wm_window_deiconify]&DeIconify" DeIconifyWindow
+# + I ThisWindow AddToMenu IconicWindowMenu \
+#         "$[infostore.icon_wm_window_deiconify]DeIconify&All" DeIconifyAll
+# + I ThisWindow (Sticky) AddToMenu IconicWindowMenu \
+#         "$[infostore.icon_wm_pin]Un&Sticky" Schedule 200 WindowStyle !Sticky
+# + I ThisWindow (!Sticky) AddToMenu IconicWindowMenu \
+#         "$[infostore.icon_wm_pin]&Sticky"   Schedule 200 WindowStyle Sticky
+# + I AddToMenu IconicWindowMenu "$[infostore.icon_wm_identify]&Identify" Module FvwmIdent
+# + I ThisWindow (Closable) AddToMenu IconicWindowMenu \
+#         "$[infostore.icon_wm_application_exit]&Close" ThisWindow Close
+
+
+
+

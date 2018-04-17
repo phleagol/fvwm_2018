@@ -1,0 +1,185 @@
+## vim: syntax=fvwm
+##
+##  ┏━╸╻ ╻╻ ╻┏┳┓┏━╸╻ ╻┏━╸┏┓╻╺┳╸
+##  ┣╸ ┃┏┛┃╻┃┃┃┃┣╸ ┃┏┛┣╸ ┃┗┫ ┃ 
+##  ╹  ┗┛ ┗┻┛╹ ╹┗━╸┗┛ ┗━╸╹ ╹ ╹ 
+##
+##  The FvwmEvent moduleconfig and related functions. 
+##  Defined event-based tasks that... 
+##    * refocus windows when focus has been lost
+##    * thumbnail windows in the background
+##    * exec final command when windows are destroyed
+
+DestroyModuleConfig FvwmEvent: *
+*FvwmEvent: Cmd Function
+*FvwmEvent: destroy_window   FE-DestroyWindow
+*FvwmEvent: new_desk         FE-NewDesk
+*FvwmEvent: focus_change     FE-FocusChange 
+*FvwmEvent: raise_window     FE-Raise
+*FvwmEvent: lower_window     FE-Lower
+*FvwmEvent: configure_window FE-ConfigWindow
+*FvwmEvent: add_window       FE-AddWindow
+*FvwmEvent: deiconify        FE-DeIconify
+*FvwmEvent: iconify          FE-Iconify
+
+
+DestroyFunc FE-ConfigWindow
+AddToFunc   FE-ConfigWindow
+# + I WithMutex Break 2
++ I ThisWindow (State $[infostore.state_forcedputlayer],!Iconic,!Layer $[infostore.putlayer]) \
+        LogActions FE-ConfigWindow/SetPutLayer
++ I ThisWindow (State $[infostore.state_forcedputlayer],!Iconic,!Layer $[infostore.putlayer]) \
+        SetLayer $[infostore.putlayer]
++ I ThisWindow (State $[infostore.state_forcedtoplayer],!Iconic,!Layer $[infostore.toplayer]) \
+        LogActions FE-ConfigWindow/SetTopLayer
++ I ThisWindow (State $[infostore.state_forcedtoplayer],!Iconic,!Layer $[infostore.toplayer]) \
+        SetLayer $[infostore.toplayer]
++ I Current (!Iconic,Overlapped) Raise
++ I Current (!Iconic,Overlapped) LogActions FE-ConfigWindow/Overlapped/Raise
++ I Current (!Iconic,Overlapped) Raise
++ I Current (!Iconic,Overlapped) LogActions FE-ConfigWindow/Overlapped/Raise
+
+##  mpv can get raised twice when going fullscreen.
+##  once from FE-ConfigWindow/SetPutLayer, 
+##  the second is not FE-ConfigWindow/Raise, but seems to be mpv instead.
+
+DestroyFunc FE-Raise  
+AddToFunc   FE-Raise 
+#+ I WithMutex Break 2
+#+ I LogActions FE-Raise
++ I ThisWindow (!Iconic) InfoStoreAdd layer_$[w.id] $[w.layer]
++ I ThisWindow ( CurrentDesk,!Focused,!Iconic,AcceptsFocus) LogActions FE-Raise/FlipFocus
++ I ThisWindow ( CurrentDesk,!Focused,!Iconic,AcceptsFocus) FlipFocus
++ I ThisWindow (!CurrentDesk,!Iconic,AcceptsFocus) LogActions FE-Raise/SetPriorityFocus
++ I ThisWindow (!CurrentDesk,!Iconic,AcceptsFocus) SetPriorityFocus
+
+DestroyFunc FE-Lower  
+AddToFunc   FE-Lower I ThisWindow (!Iconic) InfoStoreAdd layer_$[w.id] $[w.layer]
+
+##  If a NeverFocus TopLayer window is raised atop a normal focused window, 
+##  then a race condition may ensue. CAREFULL
+
+##  ^^^^  WindowListFunc causes major issue when a NeverFocus window is raised???
+##        The "Current (!Iconic, !Shaded) Raise" line above tries to Raise the 
+##        currently focused window. Loop + gridlock.
+
+DestroyFunc FE-AddWindow
+AddToFunc   FE-AddWindow
++ I ThisWindow (!Iconic) InfoStoreAdd layer_$[w.id] $[w.layer]
++ I ThisWindow (State $[infostore.state_startmaximized],!Transient) Schedule 1500 ToggleMaximize
++ I ThisWindow (State $[infostore.state_starticonified],!Transient) Schedule 1000 IconifyWindow
++ I ThisWindow (Iconifiable,Visible,CurrentDesk) Exec \
+       pgrep -f 'bin[/]perl.*FvwmThumb' 1>/dev/null && \
+       echo ":$[w.id]: :$[w.miniiconfile]:" > $[infostore.fvwmthumb_fifo]
+#  + I ThisWindow (CurrentDesk,Iconifiable) LogActions FE-AddWindow/RefreshThumbnail
+#  + I ThisWindow (CurrentDesk,Iconifiable) RefreshThumbnail
+##  ^^^^^  Using "WithMutex Break 2" here means firefox doesnt maximize when started
+
+DestroyFunc FE-NewDesk
+AddToFunc   FE-NewDesk
+#+ I WithMutex Break 2
++ I All (CurrentDesk,Iconic) PlaceAgain Anim Icon
+#+ I Next (CurrentDesk,!Iconic,State $[infostore.state_priorityfocus]) \
+        #LogActions FE-NewDesk[$[desk.n]]/PriorityFocus/WindowListFunc
++ I None (CurrentDesk,!Iconic,!Focused,State $[infostore.state_priorityfocus])  \
+    Next (CurrentDesk,!Iconic,!Focused,!Overlapped,State $[infostore.state_focusfirst]) \
+    WindowListFunc
++ I Next (CurrentDesk,!Iconic,!Focused,State $[infostore.state_priorityfocus]) WindowListFunc
++ I UnsetPriorityFocus
++ I None (CurrentDesk,Focused,!Iconic) LogActions FE-NewDesk[$[desk.n]]/RestoreFocus 
++ I None (CurrentDesk,Focused,!Iconic) RestoreFocus
+
+
+DestroyFunc FE-FocusChange
+AddToFunc   FE-FocusChange
+#+ I ThisWindow Echo $[w.name]
+#+ I ThisWindow Echo FE-FocusChange $[w.id] $[w.name]
++ I ThisWindow (!Iconic) InfoStoreAdd layer_$[w.id] $[w.layer]
++ I All (CurrentDesk,!Focused,!Iconic,State $[infostore.state_autoiconify]) \
+       Schedule $[infostore.iconify_delay3] ThisWindow (!Iconic) IconifyWindow
++ I ThisWindow (Iconifiable,Visible) Exec \
+       pgrep -f 'bin[/]perl.*FvwmThumb' 1>/dev/null && \
+       echo ":$[w.id]: :$[w.miniiconfile]:" > $[infostore.fvwmthumb_fifo]
+
+#       Schedule 2000 IconifyWindow
+#+ I WithMutex Break 2
+# + I ThisWindow (Iconifiable) LogActions FE-FocusChange/RefreshThumbnail
+# + I ThisWindow (Iconifiable) RefreshThumbnail
+
+DestroyFunc FE-DeIconify
+AddToFunc   FE-DeIconify
++ I ThisWindow SetLayer $[infostore.layer_$[w.id]]
++ I ThisWindow WindowStyle ClickToFocus
+
+DestroyFunc FE-Iconify
+AddToFunc   FE-Iconify I ThisWindow SetLayer $[infostore.iconiclayer]
+
+DestroyFunc FE-DestroyWindow
+AddToFunc   FE-DestroyWindow
+#+ I WithMutex  Break 2
++ I IfNoWindow Break 2
++ I LogActions FE-DestroyWindow
++ I All (CurrentDesk, Iconic) PlaceAgain Anim Icon
+#+ I Echo FE-DestroyWindow : $[w.id] : $[w.name]
+#+ I Exec rm "$[FVWM_THUMBS]/$[w.id].png" 1>/dev/null 2>&1 
++ I Exec rm "$[FVWM_THUMBS_1]/$[w.id].png" 1>/dev/null 2>&1 
++ I InfoStoreRemove x_$[w.id]
++ I InfoStoreRemove y_$[w.id]
++ I InfoStoreRemove width_$[w.id] 
++ I InfoStoreRemove height_$[w.id] 
++ I InfoStoreRemove layer_$[w.id] 
++ I RunFinalCommands 
++ I RestoreFocus
+
+####  RELATED FUNCTIONS
+
+##  Each desktop may have one window with priority-focus. When that desktop is  
+##  next visited, the priority-focused window will automatically receive focus.
+DestroyFunc SetPriorityFocus
+AddToFunc   SetPriorityFocus
++ I IfNoWindow Break 2
++ I UnsetPriorityFocus
++ I ThisWindow (CurrentDesk) Break 1
++ I SetState $[infostore.state_priorityfocus]
+
+##  Remove priority-focus for a window, and all other windows on that desk
+DestroyFunc UnsetPriorityFocus
+AddToFunc   UnsetPriorityFocus
++ I ThisWindow All (Desk $[w.desk]) UnsetState $[infostore.state_priorityfocus]
++ I IfNoWindow All (CurrentDesk) UnsetState $[infostore.state_priorityfocus]
+
+##  Set a command $[1-] which will only run when this window is destroyed.
+##  For each index $[0], and different final command can be set.
+DestroyFunc SetFinalCommand
+AddToFunc   SetFinalCommand
++ I IfNoWindow Break 2
++ I InfoStoreAdd FNAME FinalCommand$[0]_$[w.id]
++ I PipeRead 'echo "DestroyFunc $[infostore.FNAME]"'
++ I PipeRead 'echo "AddToFunc $[infostore.FNAME] I $[1-]"'
++ I PipeRead 'echo "AddToFunc $[infostore.FNAME] I DebugEcho FinalCommand $[0] : $[1-]"'
++ I PipeRead 'echo "AddToFunc $[infostore.FNAME] I Schedule 1000 DestroyFunc $[infostore.FNAME]" '
++ I InfoStoreAdd finalcommand$[0]_$[w.id] $[infostore.FNAME]
++ I InfoStoreRemove FNAME
+
+##  Run any final commands for this window.
+DestroyFunc RunFinalCommands
+AddToFunc   RunFinalCommands
++ I Test (EnvMatch infostore.finalcommand0_$[w.id] FinalCommand0_*) \
+         $[infostore.finalcommand0_$[w.id]]
++ I InfoStoreRemove finalcommand0_$[w.id]
++ I Test (EnvMatch infostore.finalcommand1_$[w.id] FinalCommand1_*) \
+         $[infostore.finalcommand1_$[w.id]]
++ I InfoStoreRemove finalcommand1_$[w.id]
++ I Test (EnvMatch infostore.finalcommand2_$[w.id] FinalCommand2_*) \
+         $[infostore.finalcommand2_$[w.id]]
++ I InfoStoreRemove finalcommand2_$[w.id]
++ I Test (EnvMatch infostore.finalcommand3_$[w.id] FinalCommand3_*) \
+         $[infostore.finalcommand3_$[w.id]]
++ I InfoStoreRemove finalcommand3_$[w.id]
+
+##  NOT USED ??????
+DestroyFunc SetWallpaper
+AddToFunc   SetWallpaper
++ I Test (R $[FVWM_USERDIR]/.walls/$[desk.n].png) \
+      Exec fvwm-root -r "$[FVWM_USERDIR]/.walls/$[desk.n].png"
+

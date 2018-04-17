@@ -1,0 +1,116 @@
+#!/bin/bash
+
+##  apt install paper-icon-theme papirus-icon-theme libmagickcore-6.q16-5-extra inkscape
+##  sxiv cpu.png hdd.png rx.png tx.png &
+##  http://www.fvwm.org/fvwm-logos/competition/Coji_Morishita/
+##  http://fvwm.sourceforge.net/logo-competition/logos/Coji_Morishita/?theme=plain
+
+####  DESK PAGERS
+
+rm -v *.png  2>/dev/null
+convert -size 8x8 xc:teal   square_teal.png
+convert -size 8x8 xc:'#D1CD8E' square_white.png
+#convert -size 8x8 xc:gray80 square_white.png
+#convert -size 1366x2 xc:teal topline.png
+
+####  FVWM LOGO
+
+#img=$(mktemp)
+url='http://www.fvwm.org/fvwm-logos/competition/Coji_Morishita/fvwm_sbanner_green.png'
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+out=logo.png
+fg='#006666'
+bg='#0D0D0D'
+
+wget -q "$url" -O - | convert PNG:- -quality 100% \
+    -fuzz '30%' -fill "$bg" -opaque '#2D6A43' \
+    -fuzz '80%' -fill "$fg" -opaque '#FFFFFF' \
+    -adaptive-resize x40 -crop 279x34+0+3  "$out"
+
+echo "=========="
+
+####  CPU
+
+bri=2
+dens=600
+out=cpu.png
+img='/usr/share/icons/Paper-Mono-Dark/24x24/panel/cpu-frequency-indicator.svg'
+convert -verbose -quality 100% -background transparent -density $dens "$img"      \
+    -evaluate Multiply "$bri" -fill teal -colorize 50% \
+    -adaptive-resize 34x34! -crop 34x32+0+2 "$out"
+echo "=========="
+
+
+####  DISK
+
+fg=gray66
+out=hdd.png
+img='/usr/share/icons/Adwaita/32x32/devices/drive-harddisk-usb-symbolic.symbolic.png'
+convert -verbose -quality 100% -background transparent "$img" \
+    -fuzz '30%' -fill "$fg" -opaque black -fill teal -colorize 50% \
+    -adaptive-resize 30x30! "$out"
+echo "=========="
+
+
+####  UPLOAD
+
+out=upload.png
+img=updown.xpm
+convert -verbose -quality 100% "$img" \
+    -fuzz '5%' -transparent gray9     \
+    \( -fill teal      -opaque gray70 \) \
+    \( -fill '#9E9F72' -opaque gray25 \) \
+    -adaptive-resize 34x34! -crop 34x31+0+3 "$out"
+echo "=========="
+
+#    -fill teal -colorize 50%          \
+
+####  DOWNLOAD
+
+out=download.png
+img=updown.xpm
+convert -verbose -quality 100% "$img" \
+    -fuzz '5%' -transparent gray9 \
+    \( -fill '#9E9F72' -opaque gray70 \) \
+    \( -fill teal      -opaque gray25 \) \
+    -adaptive-resize 34x34! -crop 34x31+0+3 "$out"
+echo "=========="
+
+
+#    -fill teal -colorize 50%          \
+
+# -evaluate Multiply "$bri"
+# -adaptive-resize 34x34! 
+
+##     ####  UPLOAD
+##     
+##     bri=1.8
+##     out=tx.png
+##     img='/usr/share/icons/Papirus/24x24/actions/download.svg'
+##     
+##     convert -verbose -background transparent -density $dens "$img"      \
+##         -colorspace Gray -evaluate Multiply "$bri" -adaptive-resize 40x40! -rotate 180 "$out"
+##     echo "=========="
+##     
+##     
+##     ####  DOWNLOAD
+##     
+##     out=rx.png
+##     img='/usr/share/icons/Papirus/24x24/actions/download.svg'
+##     
+##     convert -verbose -background transparent -density $dens "$img"      \
+##         -colorspace Gray -evaluate Multiply "$bri" -adaptive-resize 40x40! "$out"
+##     echo "=========="
+
+
+
+
+
+
+
+
+
+
+
+
+

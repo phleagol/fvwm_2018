@@ -1,0 +1,11 @@
+## vim: syntax=fvwm
+
+##  An xwininfo replacement.
+
+DestroyModuleConfig FvwmIdent: *
+*FvwmIdent: Font $[infostore.tamsyn20bold] 
+*FvwmIdent: Colorset $[infostore.cs_fvwmident]
+*FvwmIdent: MinimalLayer $[infostore.putlayer]
+
+
+

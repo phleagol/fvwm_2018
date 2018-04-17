@@ -1,0 +1,44 @@
+## vim: syntax=fvwm
+
+InfoStoreAdd mm_itemformat  "%s%|%13.13i%.15l%.15r%|"
+#InfoStoreAdd mm_itemformat  "%s%|%8.13i%.15l%.15r%|"
+InfoStoreAdd mm_sidepic_bin $./bin/mm_sidepic_update
+InfoStoreAdd mm_sidepic_img $[FVWM_TMP]/mm_sidepic.png
+InfoStoreAdd mm_sidecolor   gray9
+
+DestroyFunc UpdateMainMenuSidepic
+AddToFunc   UpdateMainMenuSidepic
++ I DebugEcho UpdateMainMenuSidepic [1]
++ I Exec jj="$(mktemp --suffix=.png)" ; \
+    $[infostore.mm_sidepic_bin] --bg gray9 --fg gray80 --out "$jj"  \
+    --f1 '#575723' --f2 '#004C4C'  --f3 '#575723' --f4 '#004C4C' \
+       1>/dev/null && mv "$jj" $[infostore.mm_sidepic_img] 1>/dev/null
++ I Schedule 10000 UpdateMainMenuSidepic2
+
+# ./stub5.sh --fg gray70 --bg gray9 --out zzzz.png \
+#     --f1 '#575723' --f2 '#004C4C'  --f3 '#575723' --f4 '#004C4C'
+
+# DestroyFunc UpdateMainMenuSidepic
+# AddToFunc   UpdateMainMenuSidepic
+# + I Exec jj="$(mktemp --suffix=.png)" ; \
+#     $[infostore.mm_sidepic_bin] --bg gray9 --fg gray60 --fill gray30 \
+#        --out "$jj" 1>/dev/null && mv "$jj" $[infostore.mm_sidepic_img] 1>/dev/null
+# + I Schedule 10000 UpdateMainMenuSidepic2
+
+DestroyFunc UpdateMainMenuSidepic2
+AddToFunc   UpdateMainMenuSidepic2
++ I DebugEcho UpdateMainMenuSidepic [2]
++ I CopyMenuStyle * MainMenuStyle
++ I MenuStyle MainMenuStyle ItemFormat "$[infostore.mm_itemformat]"
++ I MenuStyle MainMenuStyle SidePic    "$[infostore.mm_sidepic_img]"
++ I MenuStyle MainMenuStyle SideColor  "$[infostore.mm_sidecolor]"
++ I ChangeMenuStyle MainMenuStyle MainMenu
+
+
+
+
+
+
+
+
+

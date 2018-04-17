@@ -1,0 +1,55 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓┏┓ ┏━┓┏━╸╻┏ ┏━╸┏━┓
+##  ┣╸ ┃┏┛┃╻┃┃┃┃┣┻┓┣━┫┃  ┣┻┓┣╸ ┣┳┛
+##  ╹  ┗┛ ┗┻┛╹ ╹┗━┛╹ ╹┗━╸╹ ╹┗━╸╹┗╸
+
+##  Module to refresh separated wallpaper backgrounds whenever desktop are switched.
+DestroyModuleConfig FvwmBacker*
+*FvwmBacker: RetainPixmap
+*FvwmBacker: Command (Desk 1) Colorset $[infostore.cs_wallpaper_desk1]
+*FvwmBacker: Command (Desk 2) Colorset $[infostore.cs_wallpaper_desk2]
+*FvwmBacker: Command (Desk 3) Colorset $[infostore.cs_wallpaper_desk3]
+*FvwmBacker: Command (Desk 4) Colorset $[infostore.cs_wallpaper_desk4]
+*FvwmBacker: Command (Desk 5) Colorset $[infostore.cs_wallpaper_desk5]
+*FvwmBacker: Command (Desk 6) Colorset $[infostore.cs_wallpaper_desk6]
+*FvwmBacker: Command (Desk 7) Colorset $[infostore.cs_wallpaper_desk7]
+*FvwmBacker: Command (Desk 8) Colorset $[infostore.cs_wallpaper_desk8]
+
+##  To load images from $[FVWM_CROPPED] as colorsets for use by FvwmBacker.
+DestroyFunc RefreshWallpaperColorsets
+AddToFunc   RefreshWallpaperColorsets
++ I Test (R $[FVWM_CROPPED]/1.png) Colorset \
+    $[infostore.cs_wallpaper_desk1] Pixmap "$[FVWM_CROPPED]/1.png"
++ I Test (!R $[FVWM_CROPPED]/1.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/2.png) Colorset \
+    $[infostore.cs_wallpaper_desk2] Pixmap "$[FVWM_CROPPED]/2.png"
++ I Test (!R $[FVWM_CROPPED]/2.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/3.png) Colorset \
+    $[infostore.cs_wallpaper_desk3] Pixmap "$[FVWM_CROPPED]/3.png"
++ I Test (!R $[FVWM_CROPPED]/3.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/4.png) Colorset \
+    $[infostore.cs_wallpaper_desk4] Pixmap "$[FVWM_CROPPED]/4.png"
++ I Test (!R $[FVWM_CROPPED]/4.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/5.png) Colorset \
+    $[infostore.cs_wallpaper_desk5] Pixmap "$[FVWM_CROPPED]/5.png"
++ I Test (!R $[FVWM_CROPPED]/5.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/6.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] Pixmap "$[FVWM_CROPPED]/6.png"
++ I Test (!R $[FVWM_CROPPED]/6.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/7.png) Colorset \
+    $[infostore.cs_wallpaper_desk7] Pixmap "$[FVWM_CROPPED]/7.png"
++ I Test (!R $[FVWM_CROPPED]/7.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
++ I Test (R $[FVWM_CROPPED]/8.png) Colorset \
+    $[infostore.cs_wallpaper_desk8] Pixmap "$[FVWM_CROPPED]/8.png"
++ I Test (!R $[FVWM_CROPPED]/8.png) Colorset \
+    $[infostore.cs_wallpaper_desk6] bg $[infostore.wallpaper_default_bg], Pixmap 
+
+

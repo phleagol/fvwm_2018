@@ -1,0 +1,39 @@
+## vim: syntax=fvwm
+
+InfoStoreAdd decor_borderwidth   6
+InfoStoreAdd decor_title_height  24
+#InfoStoreAdd decor_title_font    $[infostore.terminus18bold]
+
+DestroyDecor DarkFlat
+AddToDecor   DarkFlat
++ TitleStyle Centered Height $[infostore.decor_title_height] -- Flat
++ ButtonStyle All -- UseTitleStyle Flat
++ AddButtonStyle 1 MiniIcon
++ BorderStyle Simple -- Flat 
+
+##  Active colorsets activated only after window focused via WindowList menu.
+Style * Colorset                $[infostore.cs_decor_inactive]
+Style * HilightColorset         $[infostore.cs_decor_inactive]
+Style * BorderColorset          $[infostore.cs_decor_border_inactive] 
+Style * HilightBorderColorset   $[infostore.cs_decor_border_inactive] 
+Style * Borderwidth             $[infostore.decor_borderwidth] 
+Style * Handlewidth             $[infostore.decor_borderwidth]
+
+Style * !Title, !State $[infostore.state_titledwindow]
+Style * Borders, State $[infostore.state_borderedwindow] 
+Style * UseDecor DarkFlat
+
+DestroyFunc ColorInactiveFunc
+AddToFunc   ColorInactiveFunc
++ I ThisWindow WindowStyle Colorset               $[infostore.cs_decor_inactive]
++ I ThisWindow WindowStyle HilightColorset        $[infostore.cs_decor_inactive]
++ I ThisWindow WindowStyle BorderColorset         $[infostore.cs_decor_border_inactive] 
++ I ThisWindow WindowStyle HilightBorderColorset  $[infostore.cs_decor_border_inactive] 
+
+DestroyFunc ColorActiveFunc
+AddToFunc   ColorActiveFunc
++ I ThisWindow WindowStyle Colorset               $[infostore.cs_decor_active]
++ I ThisWindow WindowStyle HilightColorset        $[infostore.cs_decor_active]
++ I ThisWindow WindowStyle BorderColorset         $[infostore.cs_decor_border_active] 
++ I ThisWindow WindowStyle HilightBorderColorset  $[infostore.cs_decor_border_active] 
+

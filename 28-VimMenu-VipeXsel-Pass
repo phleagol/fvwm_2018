@@ -1,0 +1,108 @@
+## vim: syntax=fvwm
+##  
+##  ╻ ╻╻┏┳┓   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┃┏┛┃┃┃┃   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ┗┛ ╹╹ ╹   ╹ ╹┗━╸╹ ╹┗━┛
+
+DestroyMenu VimMenu
+AddToMenu   VimMenu 
++ "$[infostore.icon_mm_gvim]&Notes"         OpenVimList random 
++ "$[infostore.icon_mm_gvim]&One-liners"    OpenVimList one-liners
++ "$[infostore.icon_mm_gvim]&Linux"         OpenVimList linux 
++ "$[infostore.icon_mm_gvim]&Psych"         OpenVimList psych 
++ "$[infostore.icon_mm_gvim]Playlists"      OpenVimList playlists 
++ "" Nop
++ "$[infostore.icon_mm_gvim]Edit &config"   OpenVimList vimmenu 
+
+##  Launch the vim editor. When args provided, the window name is $[0], and the 
+##  text files opened are $[1-]. Where no args provided, then the filepath found  
+##  on the system clipboard (xsel) is opened instead. 
+DestroyFunc OpenVim
+AddToFunc   OpenVim 
++ I IfNotFound vim  Break 2
++ I InfoStoreAdd arg :$[0]:
++ I InfoStoreAdd mode normal
++ I Test (EnvMatch infostore.arg ::) InfoStoreAdd mode xsel
++ I Test (EnvMatch infostore.mode normal) Next ("vim - $[0]") WindowListFunc
++ I Test (EnvMatch infostore.mode normal) None ("vim - $[0]") \
+        Exec exec urxvt -T "vim - $[0]" -n "vim - $[0]" \
+        -bg gray9 -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+        -e vim -p $[1-]
++ I Schedule 100 InfoRemoveAll arg mode
++ I Test (EnvMatch infostore.mode normal) Break 1
++ I InfoStoreAdd vimfile null
++ I PipeRead 'jj="$(xsel -ob)" ; [ -f "$jj" ] && echo "InfoStoreAdd vimfile $jj" ;'
+# + I DebugEcho vimfile [1] :: :$[infostore.vimfile]:
++ I Test (EnvMatch infostore.vimfile null) FF-Message 4 OpenVim : File not found
++ I Test (EnvMatch infostore.vimfile null) Schedule 50 InfoStoreRemove vimfile
++ I Test (EnvMatch infostore.vimfile null) Break 1
+# + I DebugEcho vimfile [2] :: :$[infostore.vimfile]:
++ I Next ("vim - $[infostore.vimfile]") WindowListFunc
++ I None ("vim - $[infostore.vimfile]") Exec exec urxvt \
+      -T "vim - $[infostore.vimfile]" -n "vim - $[infostore.vimfile]" -bg gray9 \
+      -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+      -e vim -p "$[infostore.vimfile]"
++ I InfoStoreRemove vimfile
+
+##  Launcher function for vim, where $[0] points to a list-file in $FVWM_LISTS.
+DestroyFunc OpenVimList
+AddToFunc   OpenVimList 
++ I IfNotFound vim  Break 2
++ I Next ("vim - $[0]") WindowListFunc
++ I Next ("vim - $[0]") Break 1
++ I InfoStoreAdd list $[FVWM_LISTS]/$[0].vim
++ I Test (!R $[infostore.list]) FF-Message 4 vim: $[0] not found...
++ I Test (!R $[infostore.list]) Break 1
++ I Test ( R $[infostore.list]) Exec exec urxvt  -T "vim - $[0]" -n "vim - $[0]" \
+      -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] -e             \
+      vim -p $(tr '\n' ' ' <$[infostore.list])
++ I Schedule 500 InfoStoreRemove list
+
+##  Edit an empty file in vim. On exit, contents are pushed to the system clipboard.
+DestroyFunc VipeXsel
+AddToFunc   VipeXsel
++ I IfNotFound vim  Break 2
++ I IfNotFound vipe Break 2
++ I Next (VipeXsel) WindowListFunc
++ I None (VipeXsel) Exec rm $[FVWM_TMP]/vipexsel 2>/dev/null ; \
+    exec urxvt -fn $[infostore.font_large] -fb $[infostore.font_large_bold] \
+    -T "VipeXsel" -n "VipeXsel" -b 8 -bg gray9 -g 109x31 \
+    -e sh -c "echo -n | vipe >$[FVWM_TMP]/vipexsel && \
+    xsel -ib <$[FVWM_TMP]/vipexsel ; sleep .5"
+
+##  Edit the contents of system clipboard in vim. On exit, 
+##  the contents are pushed to the system clipboard.
+DestroyFunc VipeXselPlus
+AddToFunc   VipeXselPlus
++ I IfNotFound vim  Break 2
++ I IfNotFound vipe Break 2
++ I Next (VipeXselPlus) WindowListFunc
++ I None (VipeXselPlus) Exec exec urxvt \
+    -fn $[infostore.font_large] -fb $[infostore.font_large_bold] \
+    -T VipeXselPlus -n VipeXselPlus -b 8 -bg gray9 -g 109x31 \
+    -e sh -c "jj=\$(mktemp) ; kk=\$(mktemp) ; \
+      xsel -ob >\$jj ; vipe <\$jj >\$kk ; xsel -ib <\$kk ; \
+      rm \$jj 2>/dev/null ; rm \$kk 2>/dev/null ; sleep .5 ;"
+
+DestroyFunc OpenPass
+AddToFunc   OpenPass
++ I IfNotFound vim Break 2
++ I Next ("~/.passwords.gpg") WindowListFunc
++ I None ("~/.passwords.gpg") Exec exec urxvt \
+    -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+    -T "~/.passwords.gpg" -n "~/.passwords.gpg" \
+    -b 8 -bg gray9 -g 67x30 -e vim $[infostore.passwords]
+
+
+# + I None (VipeXsel) Exec exec urxvt \
+#     -fn $[infostore.font_large] -fb $[infostore.font_large_bold] \
+#     -T "VipeXsel" -n "VipeXsel" -b 8 -bg gray9 -g 109x31 \
+#     -e sh -c "echo -n | vipe | xsel -ib ; sleep .5"
+
+##  ##  Launcher function for vim, where $[1-] are only text files.
+##  DestroyFunc OpenVim
+##  AddToFunc   OpenVim 
+##  + I IfNotFound vim  Break 2
+##  + I Next ("vim - $[0]") WindowListFunc
+##  + I None ("vim - $[0]") Exec exec urxvt -T "vim - $[0]" -n "vim - $[0]" \
+##    -bg gray9 -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] -e vim -p $[1-]

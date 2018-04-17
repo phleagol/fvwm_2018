@@ -1,0 +1,121 @@
+#!/usr/bin/perl
+
+##  https://scrot.moe/image/6btTl    dobbies big scrot
+##  SxivResize : window is not valid sxiv :sxiv:  at /home/phleagol/.fvwm-custom/bin/SxivResize line 46
+
+##  This module to be invoked via InitialMapCommand or FvwmEvent for new
+##  unmaximized sxiv windows that contain the full image path in the title.
+## 
+##  This module resizes new sxiv windows to the right aspect for the image. 
+##  Sxiv doesnt do this for itself by default. 
+
+use v5.24 ;
+use strictures ;
+use warnings ;
+use feature qw(signatures) ;
+no warnings qw(experimental::signatures) ;
+
+use lib `fvwm-perllib dir`;
+use FVWM::Module;
+use Path::Tiny qw( path ) ;
+use Image::Magick ;             
+# use Data::Dump qw( dump ) ;
+
+##  Exit if valid window id not found as arg.
+my $wid = $ARGV[5] ;
+exit unless $wid =~ /^0x/ ;
+$wid = hex($wid) ;
+
+##  Establish fvwm connection.
+my $modname = "SxivResize" ;
+my $module = new FVWM::Module( Name  => $modname ) ;
+
+##  Get desk info via pageinfo tracker.
+my %pageinfo =  %{ $module->track("PageInfo")->data } ;
+my ($vp_height, $vp_width) = @pageinfo{'vp_height','vp_width'} ;
+
+##  Get window info via windowlist tracker.
+my %winfo ;
+my %data = %{ $module->track("WindowList", "winfo")->data($wid) } ;
+my @attr = qw( height width visible_name ) ;
+@winfo{@attr} = @data{@attr} ;
+
+##  Extract image path from sxiv title.
+my $visible = $winfo{visible_name} ; 
+say STDERR '$visible : ' . $visible ;
+die "$modname : window is not valid sxiv :$visible: $!" unless $visible =~ /^sxiv\s-\s(\S+)$/ ;
+my $image = path($1) ;
+die "$modname : sxiv file not found : $!" unless $image->exists ;
+
+##  Fvwm event handler - store info from moduleconfig into %config.
+my %config = () ; 
+$module->addHandler(M_CONFIG_INFO, sub {
+    my ($module, $event) = @_ ;
+    if ( $event->_text =~ /^\*$modname\s*(\w+)\s+(\S.*)$/ ) {
+        my $key = $1 ; (my $foo = $2) =~ s/\s+$// ;
+        $config{$key} = $foo ;
+    }
+}) ;
+
+##  Fvwm event handler - parsing of the moduleconfig has finished. 
+my ($maxwidth, $maxheight, $aspect, $voffset) ;
+$module->addHandler(M_END_CONFIG_INFO, sub {
+    #dump %config ;
+    $voffset = read_config("VOffset") ;
+    my $maxwidth_perc  = read_config("MaxWidth") ;
+    my $maxheight_perc = read_config("MaxHeight") ;
+    $maxwidth  = int( $maxwidth_perc  * $vp_width  / 100 ) ;
+    $maxheight = int( $maxheight_perc * $vp_height / 100 ) ;
+    $aspect    = $maxwidth/$maxheight ;
+    main() ;
+}) ;
+
+##  Start parsing the fvwm moduleconfig. Loop will end when done.
+$module->send("Send_ConfigInfo") ;
+$module->event_loop ;
+exit ;
+
+##  Main function - runs after the moduleconfig parsing has finished.
+sub main {
+    my ($width, $height) ;
+    my $img = read_image($image) ;
+    my ($ww, $hh, $aa) = geometry($img) ;
+    if ($aa >= $aspect) {
+        $width = $maxwidth ;
+        $height = $width * $hh / $ww ;
+    } else {
+        $height = $maxheight ;
+        $width = $height * $ww / $hh ;
+    } ;
+    $module->send("ResizeMove ${width}p ${height}p 50-50w 50-50w+$voffset", $wid) ;
+    $module->terminate ;
+    return ;
+}
+
+##  Read a specific value from the fvwm moduleconfig - %config. 
+sub read_config {
+    my $key = shift ;
+    die "[$modname] $key not set" unless defined $config{$key} ;
+    return $config{$key} ;
+}
+
+##  Create an imagemagick object from an image file.
+sub read_image($img) {
+    die "$modname : cannot open image"  unless open(IMAGE, $img) ;
+    my $err = 1  ;
+    my $image = Image::Magick->New(quality => 1) ;
+    $err = $image->Read(file=>\*IMAGE) ;
+    close(IMAGE) ;
+    die "readimage : cannot read image : $img : $err" if $err ;
+    return $image ;
+}
+
+##  Returns the width, height, aspect ratio of an image.
+sub geometry($img)  {
+    my $w = $img->Get('columns') ;
+    my $h = $img->Get('rows') ;
+    my $a = $w/$h ;
+    return ($w, $h, $a) ;
+}
+
+

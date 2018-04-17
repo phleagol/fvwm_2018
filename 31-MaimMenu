@@ -1,0 +1,69 @@
+## vim: syntax=fvwm
+##  
+##  ┏┳┓┏━┓╻┏┳┓   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┃┃┃┣━┫┃┃┃┃   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ╹ ╹╹ ╹╹╹ ╹   ╹ ╹┗━╸╹ ╹┗━┛
+##
+##  MaimMenu  -  menu/functions to take screenshots...
+
+DestroyMenu MaimMenu
+AddToMenu   MaimMenu 
++ "$[infostore.icon_mm_xzoom]Region"     MaimRegion
++ "$[infostore.icon_mm_scrot]5 seconds"  Maim5sec
++ "$[infostore.icon_mm_scrot]10 seconds" Maim10sec
++ "$[infostore.icon_mm_scrot]Now"        MaimNow
+
+##  For appearance of window selection.
+InfoStoreAdd maim_bordercolor 0.21,0.39,0.54,1
+InfoStoreAdd maim_borderwidth 6
+
+DestroyFunc MaimNow
+AddToFunc   MaimNow 
++ I IfNotFound maim Break 2
++ I -Exec jj="$FVWM_SCREENSHOTS/$(date +%s).png" ; \
+         maim -m 1 "$jj" && echo -n "$jj" | xsel -ib && sxiv "$jj"
+
+DestroyFunc Maim5sec
+AddToFunc   Maim5sec
++ I IfNotFound maim Break 2
++ I FF-Message 2 Screenshot in 5 seconds...
++ I -Exec jj="$FVWM_SCREENSHOTS/$(date +%s).png" ; \
+        maim -d 5 -m 1 "$jj" && echo -n "$jj" | xsel -ib && sxiv "$jj"
+
+DestroyFunc Maim10sec
+AddToFunc   Maim10sec 
++ I IfNotFound maim Break 2
++ I FF-Message 1 Screenshot in 10 seconds...
++ I -Exec jj="$FVWM_SCREENSHOTS/$(date +%s).png" ; \
+        maim -d 10 -m 1 "$jj" && echo -n "$jj" | xsel -ib && sxiv "$jj"
+
+##  https://stackoverflow.com/questions/13280131/hexadecimal-to-decimal-in-shell-script
+##  printf "%d" 0x1000009 => 16777225
+
+DestroyFunc MaimWindow
+AddToFunc   MaimWindow 
++ I IfNotFound maim Break 2
++ I IfNoWindow Break 2
++ I -Exec jj="$FVWM_SCREENSHOTS/$(date +%s).png" ; \
+        maim -m 1 -i "$(xdotool getactivewindow)" "$jj" && \
+        echo -n "$jj" | xsel -ib && sxiv "$jj"
+
+DestroyFunc MaimRegion
+AddToFunc   MaimRegion 
++ I IfNotFound maim Break 2
++ I IfNotFound slop Break 2
++ I FF-Message 1 Maim : Select region please...
++ I Schedule 2000 Exec jj="$FVWM_SCREENSHOTS/$(date +%s).png" ; \
+        maim -b $[infostore.maim_borderwidth] --color=$[infostore.maim_bordercolor] \
+        -m 1 -s "$jj" && echo -n "$jj" | xsel -ib && sxiv "$jj" 
+
+####  IMGUR IMAGE UPLOAD
+
+##  Opens a file found on the system clipboard. Invoked via the clipboard manager.
+DestroyFunc ImageUpload
+AddToFunc   ImageUpload
++ I IfNotFound imgur-screenshot.sh Break 2
++ I FF-Message 2 Imgur: Uploading...
++ I Exec imgur-screenshot.sh "$(xsel -ob | head -1)" 1>&2
+
+

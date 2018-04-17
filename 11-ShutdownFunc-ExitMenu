@@ -1,0 +1,68 @@
+## vim: syntax=fvwm
+
+##  ┏━┓╻ ╻╻ ╻╺┳╸╺┳┓┏━┓╻ ╻┏┓╻┏━╸╻ ╻┏┓╻┏━╸   ┏━╸╺┳╸┏━╸
+##  ┗━┓┣━┫┃ ┃ ┃  ┃┃┃ ┃┃╻┃┃┗┫┣╸ ┃ ┃┃┗┫┃     ┣╸  ┃ ┃  
+##  ┗━┛╹ ╹┗━┛ ╹ ╺┻┛┗━┛┗┻┛╹ ╹╹  ┗━┛╹ ╹┗━╸   ┗━╸ ╹ ┗━╸
+##
+##  Not the standard way to exit FVWM, but works fine for me.
+
+DestroyFunc ShutdownFunc
+AddToFunc   ShutdownFunc
++ I CleanupFunc
++ I Exec exec urxvt -n "shutdown.sh" -T "shutdown.sh" -b 15 \
+    -fn $[infostore.font_medium_bold] -fb $[infostore.font_medium_bold] \
+    -fg gray70 -bg gray9 -e $[FVWM_USERDIR]/bin/shutdown.sh $[0]
+
+DestroyFunc RebootFunc
+AddToFunc   RebootFunc
++ I CleanupFunc
++ I Exec exec sudo /sbin/reboot
+
+DestroyFunc CleanupFunc
+AddToFunc   CleanupFunc
++ I Echo **** CLEANUPFUNC ****
++ I SaveSettings
++ I PipeRead '[ "$[0]" = "poweroff" -o "$[0]" = "reboot" ] || echo "Break 1" ; '
++ I Deschedule $[infostore.psid_restart_processes]
++ I Deschedule $[infostore.psid_restart_fvwmanimate]
++ I Deschedule $[infostore.psid_check_restart_thumbnails]
++ I Deschedule $[infostore.psid_check_restart_clipboard]
++ I Deschedule $[infostore.psid_check_restart_fvwmclip]
++ I Deschedule $[infostore.psid_restart_thumbnails]
++ I KillModule Clipboard
++ I Exec pkill -f 'bin/perl.*Clipboard'
++ I All (!FvwmForm,!PanelStatusBar2) ThisWindow Close 
++ I All ("FF-Confirm|FF-Okay|FF-TVSchedule") ThisWindow Close 
++ I Exec sudo tomb close
+
+####  EXITMENU  
+
+DestroyMenu ExitMenu
+AddToMenu   ExitMenu
++ "$[infostore.icon_mm_session_reboot]&Reboot"       RebootFunc
++ "$[infostore.icon_mm_session_shutdown]&Shutdown"   ShutdownFunc
++ "$[infostore.icon_mm_session_shutdown]&Timed Exit" FF-ExitTimer
+
+DestroyFunc FF-ExitTimer
+AddToFunc   FF-ExitTimer
++ I DestroyModuleConfig FF-ExitTimer: *
++ I *FF-ExitTimer: WarpPointer
++ I *FF-ExitTimer: PadVText 25
++ I *FF-ExitTimer: Title "Exit Timer"
++ I *FF-ExitTimer: Line Center
++ I *FF-ExitTimer: Text "Delay:"
++ I *FF-ExitTimer: Input delay 8 "20"
++ I *FF-ExitTimer: Line Center
++ I *FF-ExitTimer: Text "     "
++ I *FF-ExitTimer: Button quit "Start" ^Y
++ I *FF-ExitTimer: Command ExitTimer $(delay)
++ I *FF-ExitTimer: Text "     "
++ I KillModule FvwmForm FF-ExitTimer
++ I Module     FvwmForm FF-ExitTimer
+
+DestroyFunc ExitTimer
+AddToFunc   ExitTimer I Exec exec \
+    urxvt -name ftimer -n "Exit_Timer" -T "Exit_Timer" -g 25x5  \
+    -fn $[infostore.dejavu14bold] -fb $[infostore.dejavu14bold] \
+    -e sh -c "ftimer -a $[0] && FvwmCommand \" ShutdownFunc\" "
+

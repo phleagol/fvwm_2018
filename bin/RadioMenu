@@ -1,0 +1,25 @@
+#!/usr/bin/perl
+use utf8 ;
+use v5.24 ;
+use strict ;
+use warnings ;
+no Moo::sification ;
+
+##  An fvwm menu to present a selection of radio stations as defined by a config file (radiorc).
+##  The selected radio station is played via mpv. Actions also exist to play the next/prev 
+##  radio station. But if MPD is playing rather than radio/mpv, then the next/prev MPD 
+##  tracks will be played instead. 
+
+use lib `fvwm-perllib dir` ;
+# use lib "$ENV{FVWM_USERDIR}/lib" ;
+use lib "$ENV{FVWM_LIB}" ;
+use FVWM::RadioMenu ;
+
+my $radiomenu = FVWM::RadioMenu->new(fvwmname => 'RadioMenu') ;
+$radiomenu->start ;
+
+
+
+
+
+

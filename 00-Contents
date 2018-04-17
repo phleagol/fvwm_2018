@@ -1,0 +1,82 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+
+##  ┏━╸┏━┓┏┓╻╺┳╸┏━╸┏┓╻╺┳╸┏━┓
+##  ┃  ┃ ┃┃┗┫ ┃ ┣╸ ┃┗┫ ┃ ┗━┓
+##  ┗━╸┗━┛╹ ╹ ╹ ┗━╸╹ ╹ ╹ ┗━┛
+
+Read     01-General
+Read     02-Helper-Functions
+ReadFile 03-Themes
+ReadFile 09-Window-Styles
+ReadFile 10-StartFunction-etc
+ReadFile 11-ShutdownFunc-ExitMenu
+ReadFile 12-Key-Bindings
+ReadFile 13-Mouse-Bindings
+ReadFile 14-Menu-Bindings
+ReadFile 15-WindowList
+ReadFile 16-Maximize-Functions
+ReadFile 17-Iconify-Functions
+ReadFile 18-Window-Functions
+ReadFile 20-FvwmEvent
+ReadFile 21-FvwmThumb
+ReadFile 22-Root-Menu
+ReadFile 23-TimerMenu
+ReadFile 24-Main-Menu
+#ReadFile 26-Ncmpcpp
+ReadFile 27-BrowserMenu-Dillo-W3m
+ReadFile 28-VimMenu-VipeXsel-Pass
+ReadFile 29-XdgMenu
+ReadFile 30-Desktop-Menu
+ReadFile 31-MaimMenu
+ReadFile 33-Firefox-Chromium-PaleMoon
+ReadFile 35-MPV-Ytdl-Streamlink
+ReadFile 36-FvwmAnimate
+ReadFile 37-FvwmForm
+ReadFile 38-FvwmIdent
+ReadFile 40-Window-Menu
+ReadFile 42-FvwmWallpaper
+ReadFile 43-FvwmBacker
+ReadFile 45-FvwmSxiv 
+ReadFile 46-FvwmMount
+ReadFile 48-FvwmMusic
+ReadFile 51-FvwmClip
+ReadFile .xdgmenu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

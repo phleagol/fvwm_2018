@@ -1,0 +1,59 @@
+## vim: syntax=fvwm
+##
+##  ╻ ╻╻┏┓╻╺┳┓┏━┓╻ ╻╻  ╻┏━┓╺┳╸   ┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻
+##  ┃╻┃┃┃┗┫ ┃┃┃ ┃┃╻┃┃  ┃┗━┓ ┃    ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫
+##  ┗┻┛╹╹ ╹╺┻┛┗━┛┗┻┛┗━╸╹┗━┛ ╹    ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹
+##
+##  Activated whenever a window is selected from the windowlist menu. 
+##  Used to switch between windows. This function will replace the default builtin. 
+
+##  Used by the WindowList cmnd. Replaces the builtin function.
+DestroyFunc WindowListFunc
+AddToFunc   WindowListFunc
++ I ThisWindow (!CurrentDesk) SetPriorityFocus
++ I ThisWindow (!CurrentDesk) GotoDesk 0 $[w.desk]
++ I ThisWindow (!Iconic) FlipFocus NoWarp
++ I ThisWindow (!Iconic) WarpToWindow 50 50
++ I ThisWindow (Iconic) DeIconifyWindow 
+
+##  WARPTOWINDOW - necessary as it provides raise for normal windows
+##  Iconic windows get implicit Raise from "Iconify False"
+
+##  Custom Menustyle
+DestroyMenuStyle WindowList
+CopyMenuStyle *  WindowList
+MenuStyle WindowList ItemFormat "%|%13.13i%.15l%.5i%2.3>%10.|" 
+
+
+####  KEY BINDINGS
+
+##  Alt + Tab        :   Next normal window 
+##  Super_L + Tab    :   Next iconic window 
+
+Key Tab A M NormalWindowList Meta_L
+Key Tab A 4 IconicWindowList Super_L
+
+DestroyFunc NormalWindowList
+AddToFunc   NormalWindowList 
++ I WindowList (CurrentDesk,AcceptsFocus,!Iconic) Root c c \
+        NoCurrentDeskTitle, NoGeometry, CurrentAtEnd, MaxLabelWidth 60, \
+        Function HilightFocused, SelectOnRelease $[0]
+
+DestroyFunc IconicWindowList
+AddToFunc   IconicWindowList 
++ I All UnsetState $[infostore.state_temp]
++ I All (CurrentDesk,Iconic) SetState $[infostore.state_temp]
++ I All (State $[infostore.state_temp],Iconic) SetLayer $[infostore.toplayer]
++ I WindowList (CurrentDesk,Iconic) Root c c \
+        NoCurrentDeskTitle, NoGeometry, ReverseOrder, MaxLabelWidth 60, \
+        SelectOnRelease $[0]
++ I Schedule 400 All (State $[infostore.state_temp],Iconic) SetLayer $[infostore.iconiclayer]
+
+##  Briefly focus hilight the window, then run windowlistfunc...
+DestroyFunc HilightFocused
+AddToFunc   HilightFocused
++ I ThisWindow All (CurrentDesk,AcceptsFocus,!Maximized) ColorInactiveFunc
++ I ThisWindow (!Iconic,!Maximized) ColorActiveFunc
++ I ThisWindow (!Iconic,!Maximized) Schedule 1000 ColorInactiveFunc
++ I ThisWindow WindowListFunc
+

@@ -1,0 +1,257 @@
+## vim: syntax=fvwm
+##
+##  ╻ ╻╻┏┓╻╺┳┓┏━┓╻ ╻   ┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻┏━┓
+##  ┃╻┃┃┃┗┫ ┃┃┃ ┃┃╻┃   ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫┗━┓
+##  ┗┻┛╹╹ ╹╺┻┛┗━┛┗┻┛   ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹┗━┛
+
+
+DestroyFunc CloseWindow
+AddToFunc   CloseWindow
++ I IfNoWindow PleaseSelectThen NoWindow Pick Close
++ I ThisWindow (!Closable) FF-Message 4 Alert: This window is not closable.
++ I ThisWindow  (Closable) Close
+
+DestroyFunc PrintWindow
+AddToFunc   PrintWindow
++ I ThisWindow ( Focused) DebugEcho $[w.id] : $[w.name] : [FOCUSED]
++ I ThisWindow (!Focused) DebugEcho $[w.id] : $[w.name] 
+
+DestroyFunc PrintStates
+AddToFunc   PrintStates
++ I DebugEcho PrintStates -------------------
++ I ThisWindow ( State $[infostore.state_titledwindow])   DebugEcho     Titled:     ON
++ I ThisWindow (!State $[infostore.state_titledwindow])   DebugEcho     Titled:    OFF
++ I ThisWindow ( State $[infostore.state_focusable])      DebugEcho     Focusable:  ON
++ I ThisWindow (!State $[infostore.state_focusable])      DebugEcho     Focusable: OFF
++ I ThisWindow ( State $[infostore.state_borderedwindow]) DebugEcho     Bordered:   ON
++ I ThisWindow (!State $[infostore.state_borderedwindow]) DebugEcho     Bordered:  OFF
++ I DebugEcho
+
+DestroyFunc ResizeWindow
+AddToFunc   ResizeWindow
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
++ I ThisWindow (FixedSize) Break 1
++ I InfoStoreAdd arg :$[0]:
++ I InfoStoreAdd cursor 0
++ I Test (EnvMatch infostore.arg :NorthEast:) InfoStoreAdd cursor top_right_corner 
++ I Test (EnvMatch infostore.arg :SouthWest:) InfoStoreAdd cursor bottom_left_corner
++ I Test (EnvMatch infostore.arg :SouthEast:) InfoStoreAdd cursor bottom_right_corner
++ I Test (EnvMatch infostore.arg :NorthWest:) InfoStoreAdd cursor top_left_corner
++ I Test (EnvMatch infostore.cursor 0) Break 1
++ I WarpToWindow 50 50
++ I CursorStyle RESIZE $[infostore.cursor]
++ I Schedule 200 ThisWindow Resize direction $[0] warptoborder
++ I Schedule 200 ThisWindow WarpToWindow 50 50
++ I InfoRemoveAll arg cursor
+
+##  Apply !Iconic, !Maximized, CurrentDesk and other options
+DestroyFunc ResizeToMargin
+AddToFunc   ResizeToMargin
++ I SendToModule FvwmAnimate reset
++ I InfoStoreAdd arg :$[0]:
++ I Test (Envmatch infostore.arg ::) Break 1
++ I InfoStoreAdd xxxx $[w.x]
++ I InfoStoreAdd yyyy $[w.y]
++ I InfoStoreAdd wwww $[w.width]
++ I InfoStoreAdd hhhh $[w.height]
++ I Test (Envmatch infostore.arg :East:)  InfoSum wwww $[vp.width]  -$[w.x] -$[infostore.margin_east]
++ I Test (Envmatch infostore.arg :South:) InfoSum hhhh $[vp.height] -$[w.y] -$[infostore.margin_south]
++ I Test (Envmatch infostore.arg :West:)  InfoSum wwww $[w.width]    $[w.x] -$[infostore.margin_west]
++ I Test (Envmatch infostore.arg :North:) InfoSum hhhh $[w.height]   $[w.y] -$[infostore.margin_north]
++ I Test (Envmatch infostore.arg :West:)  InfoStoreAdd xxxx $[infostore.margin_west]
++ I Test (Envmatch infostore.arg :North:) InfoStoreAdd yyyy $[infostore.margin_north]
++ I Schedule 100 ThisWindow (CurrentDesk) SendToModule FvwmAnimate animate \
+      $[w.x] $[w.y] $[w.width] $[w.height] \
+      $[infostore.xxxx] $[infostore.yyyy] $[infostore.wwww] $[infostore.hhhh]  
++ I Test (Envmatch infostore.arg :East:)  Schedule 400 \
+        ThisWindow Resize br -+$[infostore.margin_east]p keep frame
++ I Test (Envmatch infostore.arg :South:) Schedule 400 \
+        ThisWindow Resize br keep -+$[infostore.margin_south]p frame
++ I Test (Envmatch infostore.arg :West:)  Schedule 400 \
+        ThisWindow Resize $[infostore.wwww]p keep frame
++ I Test (Envmatch infostore.arg :West:)  Schedule 420 \
+        ThisWindow Move ++$[infostore.margin_west]p keep ewmhiwa
++ I Test (Envmatch infostore.arg :North:) Schedule 400 \
+        ThisWindow Resize keep $[infostore.hhhh]p frame
++ I Test (Envmatch infostore.arg :North:) Schedule 420 \
+        ThisWindow Move keep ++$[infostore.margin_north]p ewmhiwa
++ I Schedule 600 InfoRemoveAll xxxx yyyy wwww hhhh
+
+##  Super + T.  
+DestroyFunc ToggleTitle
+AddToFunc   ToggleTitle
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
++ I IfNotTitled InfoStoreAdd mode show
++ I IfTitled    InfoStoreAdd mode hide
++ I InfoStoreAdd winheight $[w.height]
++ I Test (EnvMatch infostore.mode show) WindowStyle  Title
++ I Test (EnvMatch infostore.mode hide) WindowStyle !Title
++ I UpdateStyles
++ I Schedule 100 InfoRemoveAll mode winheight
++ I IfEqual $[infostore.winheight] $[w.height] Break 2 
++ I Test (EnvMatch infostore.mode show) Move keep w-$[infostore.decor_title_height]p ewmhiwa
++ I Test (EnvMatch infostore.mode hide) Move keep w+$[infostore.decor_title_height]p ewmhiwa
++ I Test (EnvMatch infostore.mode show) SetState    $[infostore.state_titledwindow]
++ I Test (EnvMatch infostore.mode hide) UnsetState  $[infostore.state_titledwindow]
+
+##  From the WindowMenu
+DestroyFunc ToggleBorders
+AddToFunc   ToggleBorders
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+# + I ThisWindow (Shaded)    Break 1
++ I InfoStoreAdd bwidth $[infostore.decor_borderwidth]
++ I InfoSum  delta  $[infostore.bwidth]  $[infostore.bwidth]
++ I IfBordered    InfoStoreAdd mode hide
++ I IfNotBordered InfoStoreAdd mode show
++ I Test (EnvMatch infostore.mode hide) WindowStyle !Borders, !Handles
++ I Test (EnvMatch infostore.mode hide) Move w+$[infostore.bwidth]p w+$[infostore.bwidth]p ewmhiwa
++ I Test (EnvMatch infostore.mode show) WindowStyle  Borders,  Handles
++ I Test (EnvMatch infostore.mode show) Move w-$[infostore.bwidth]p w-$[infostore.bwidth]p ewmhiwa
++ I Test (EnvMatch infostore.mode hide) UnsetState $[infostore.state_borderedwindow]
++ I Test (EnvMatch infostore.mode show) SetState   $[infostore.state_borderedwindow]
++ I InfoRemoveAll delta bwidth mode
+
+##  Both move window and switch desktop to $[0]. Use next/prev for adjacent desktops.
+DestroyFunc MoveSwitch
+AddToFunc   MoveSwitch
++ I IfNoWindow Break 2
++ I ThisWindow (Iconic) Break 1
+# + I ThisWindow (Shaded) Break 1
++ I InfoStoreAdd msarg :$[0]:
++ I InfoStoreAdd msmode absolute
++ I Test (EnvMatch infostore.msarg :next:) InfoStoreAdd msmode adjacent
++ I Test (EnvMatch infostore.msarg :prev:) InfoStoreAdd msmode adjacent
++ I Test (EnvMatch infostore.msarg :next:) MoveToDesk  1 $[infostore.desk_min] $[infostore.desk_max]
++ I Test (EnvMatch infostore.msarg :prev:) MoveToDesk -1 $[infostore.desk_min] $[infostore.desk_max]
++ I Test (EnvMatch infostore.msmode absolute) MoveToDesk \
+          0 $[0] $[infostore.desk_min] $[infostore.desk_max]
++ I SetPriorityFocus
++ I Test (EnvMatch infostore.msarg :next:) GotoDesk  1 $[infostore.desk_min] $[infostore.desk_max]
++ I Test (EnvMatch infostore.msarg :prev:) GotoDesk -1 $[infostore.desk_min] $[infostore.desk_max]
++ I Test (EnvMatch infostore.msmode absolute) GotoDesk 0 $[0] $[infostore.desk_min] $[infostore.desk_max]
++ I InfoRemoveAll msarg msmode
+
+##  Refocus the next focusable window. Used by FvwmEvent when focus might be lost. 
+DestroyFunc RestoreFocus
+AddToFunc   RestoreFocus
++ I Any (CurrentDesk,Focused,!Iconic,) Break 1
++ I Prev (AcceptsFocus,CurrentDesk,!Iconic,) LogActions RestoreFocus/FocusPrevious
++ I Prev (AcceptsFocus,CurrentDesk,!Iconic,) WindowListFunc
+
+DestroyFunc ToggleWindowListSkip
+AddToFunc   ToggleWindowListSkip
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+##   + I ThisWindow (Shaded)    Break 1
++ I ThisWindow ( State $[infostore.state_windowlistskip]) InfoStoreAdd skipmode hit
++ I ThisWindow (!State $[infostore.state_windowlistskip]) InfoStoreAdd skipmode skip
++ I Test (EnvMatch infostore.skipmode hit)  WindowStyle WindowListHit
++ I Test (EnvMatch infostore.skipmode skip) WindowStyle WindowListSkip
++ I Test (EnvMatch infostore.skipmode hit)  UnsetState $[infostore.state_windowlistskip]
++ I Test (EnvMatch infostore.skipmode skip) SetState   $[infostore.state_windowlistskip]
++ I InfoStoreRemove skipmode
+
+DestroyFunc ToggleFocusable
+AddToFunc   ToggleFocusable
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+##  + I ThisWindow (Shaded)    Break 1
++ I ThisWindow ( AcceptsFocus) InfoStoreAdd focusmode NeverFocus
++ I ThisWindow (!AcceptsFocus) InfoStoreAdd focusmode ClickToFocus
++ I Test (EnvMatch infostore.focusmode NeverFocus)   WindowStyle NeverFocus
++ I Test (EnvMatch infostore.focusmode ClickToFocus) WindowStyle ClickToFocus
++ I Test (EnvMatch infostore.focusmode ClickToFocus) WindowListFunc
++ I InfoStoreRemove focusmode
+
+DestroyFunc ToggleFixedSize
+AddToFunc   ToggleFixedSize
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+##  + I ThisWindow (Shaded)    Break 1
++ I ThisWindow (!FixedSize) InfoStoreAdd sizemode fixed
++ I ThisWindow ( FixedSize) InfoStoreAdd sizemode variable
++ I Test (EnvMatch infostore.sizemode fixed)    WindowStyle  FixedSize
++ I Test (EnvMatch infostore.sizemode variable) WindowStyle !FixedSize
++ I InfoStoreRemove sizemode
+
+DestroyFunc ToggleFixedPosition
+AddToFunc   ToggleFixedPosition
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+##  + I ThisWindow (Shaded)    Break 1
++ I ThisWindow (!FixedPosition) InfoStoreAdd posmode fixed
++ I ThisWindow ( FixedPosition) InfoStoreAdd posmode variable
++ I Test (EnvMatch infostore.posmode fixed)    WindowStyle  FixedPosition
++ I Test (EnvMatch infostore.posmode variable) WindowStyle !FixedPosition
++ I InfoStoreRemove posmode
+
+DestroyFunc ToggleMaximizable
+AddToFunc   ToggleMaximizable
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
+##  + I ThisWindow (Shaded)    Break 1
++ I ThisWindow (!Maximizable) InfoStoreAdd newmode max
++ I ThisWindow ( Maximizable) InfoStoreAdd newmode nomax
++ I Test (EnvMatch infostore.newmode   max) WindowStyle  Maximizable
++ I Test (EnvMatch infostore.newmode nomax) WindowStyle !Maximizable
++ I InfoStoreRemove newmode
+
+DestroyFunc ToggleIconifiable
+AddToFunc   ToggleIconifiable
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
++ I ThisWindow (!Iconifiable) InfoStoreAdd newmode yes_iconify
++ I ThisWindow ( Iconifiable) InfoStoreAdd newmode not_iconify
++ I Test (EnvMatch infostore.newmode yes_iconify) WindowStyle  Iconifiable
++ I Test (EnvMatch infostore.newmode not_iconify) WindowStyle !Iconifiable
++ I InfoStoreRemove newmode
+
+DestroyFunc ToggleAutoIconify
+AddToFunc   ToggleAutoIconify
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1
++ I ThisWindow (Iconic)    Break 1
++ I ThisWindow (!State $[infostore.state_autoiconify]) InfoStoreAdd newmode yes_autoiconify
++ I ThisWindow ( State $[infostore.state_autoiconify]) InfoStoreAdd newmode not_autoiconify
++ I Test (EnvMatch infostore.newmode yes_autoiconify) SetState   $[infostore.state_autoiconify]
++ I Test (EnvMatch infostore.newmode not_autoiconify) UnsetState $[infostore.state_autoiconify]
++ I InfoStoreRemove newmode
+
+
+####  INLINE HELPERS 
+
+##  If window is titled then do $[*]...
+DestroyFunc IfTitled
+AddToFunc   IfTitled I ThisWindow (State $[infostore.state_titledwindow]) $[*]
+
+##  If window is not titled then do $[*]...
+DestroyFunc IfNotTitled
+AddToFunc   IfNotTitled I ThisWindow (!State $[infostore.state_titledwindow]) $[*]
+
+##  If window is bordered then do $[*]...
+DestroyFunc IfBordered
+AddToFunc   IfBordered I ThisWindow (State $[infostore.state_borderedwindow]) $[*]
+
+##  If window is not bordered then do $[*]...
+DestroyFunc IfNotBordered
+AddToFunc   IfNotBordered I ThisWindow (!State $[infostore.state_borderedwindow]) $[*]
+
+##  If no valid window context found, then do $[*]
+DestroyFunc IfNoWindow
+AddToFunc   IfNoWindow
++ I InfoStoreAdd ifnowindow :$[w.name]:
++ I Test (EnvMatch infostore.ifnowindow :\$\[w.name\]:) $[*]
++ I InfoStoreRemove ifnowindow
+

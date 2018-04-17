@@ -1,0 +1,63 @@
+## vim: syntax=fvwm
+##
+##    ╺┳╸╻┏┳┓┏━╸┏━┓   ┏┳┓┏━╸┏┓╻╻ ╻
+##     ┃ ┃┃┃┃┣╸ ┣┳┛   ┃┃┃┣╸ ┃┗┫┃ ┃
+##     ╹ ╹╹ ╹┗━╸╹┗╸   ╹ ╹┗━╸╹ ╹┗━┛
+##
+##  Submenu of RootMenu to launch clocks + timers etc...
+
+DestroyMenu TimerMenu
+AddToMenu   TimerMenu
++ "$[infostore.icon_mm_alarm]&Alarm" FF-Alarm
++ "$[infostore.icon_mm_timer]&Clock" Clock
++ "$[infostore.icon_mm_timer]&Timer" Stopwatch
+
+DestroyFunc FF-Alarm
+AddToFunc   FF-Alarm
++ I DestroyModuleConfig FF-Alarm: *
++ I *FF-Alarm: WarpPointer
++ I *FF-Alarm: PadVText 25
++ I *FF-Alarm: Title "Alarm"
++ I *FF-Alarm: Line Center
++ I *FF-Alarm: Text "Title:"
++ I *FF-Alarm: Input title 12 ""
++ I *FF-Alarm: Line Center
++ I *FF-Alarm: Text "Delay:"
++ I *FF-Alarm: Input delay 12 "20"
++ I *FF-Alarm: Line Center
++ I *FF-Alarm: Text "      "
++ I *FF-Alarm: Button quit "Start" ^Y
++ I *FF-Alarm: Command AlarmTimer $(title) $(delay)
++ I *FF-Alarm: Text "    "
++ I KillModule FvwmForm FF-Alarm
++ I Module FvwmForm FF-Alarm
+
+DestroyFunc AlarmTimer
+AddToFunc   AlarmTimer 
++ I All (ftimer) Close
++ I Schedule 500 Exec exec urxvt -name ftimer -n $[0] -T $[0] -g 25x5 \
+    -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+    -e sh -c "$FVWM_USERDIR/bin/ftimer -a $[1] && \
+    FvwmCommand \"FF-Message 10 Alert : $[0]\" "
+
+DestroyFunc Stopwatch
+AddToFunc   Stopwatch 
++ I All (Stopwatch) Close
++ I Schedule 500 Exec exec urxvt -name ftimer -n Stopwatch -T Stopwatch -g 25x5  \
+    -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+    -e $FVWM_USERDIR/bin/ftimer -t
+
+##  PLZ MOVE TO THEME
+
+# https://www.wfonts.com/font/terminal-wide
+InfoStoreAdd xcolors_ftimer $[FVWM_USERDIR]/themes/teal/xcolors/ftimer
+InfoStoreAdd font_ftimer "xft:Terminal Wide:style=Regular:pixelsize=10" 
+
+DestroyFunc Clock
+AddToFunc   Clock 
++ I All (Clock) Close
++ I DebugEcho Starting Clock...
++ I Schedule 500 Exec exec urxvt -name ftimer -n Clock -T Clock -g 24x5  \
+    -fn "$[infostore.font_ftimer]" -fb "$[infostore.font_ftimer]" -e sh -c \
+    "$[infostore.xcolors_ftimer] && $[FVWM_BIN]/ftimer-clock"
+

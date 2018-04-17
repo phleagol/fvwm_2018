@@ -1,0 +1,217 @@
+## vim: syntax=fvwm
+
+##  ╻ ╻╻┏┓╻╺┳┓┏━┓╻ ╻   ┏━┓╺┳╸╻ ╻╻  ┏━╸┏━┓
+##  ┃╻┃┃┃┗┫ ┃┃┃ ┃┃╻┃   ┗━┓ ┃ ┗┳┛┃  ┣╸ ┗━┓
+##  ┗┻┛╹╹ ╹╺┻┛┗━┛┗┻┛   ┗━┛ ╹  ╹ ┗━╸┗━╸┗━┛
+
+####  GENERAL STYLES
+
+Style * !StickyStippledTitle
+Style * WindowShadeSteps 0
+Style * ClickToFocus
+Style * FPReleaseFocus
+Style * !AllowMaximizeFixedSize
+Style * EWMHUseStackingOrderHints
+Style * SkipMapping
+Style * !UsePPosition
+Style * PositionPlacement Center
+Style * NoOLDecor
+Style * MWMFunctions, MWMDecor, HintOverride
+Style * DecorateTransient
+Style * ResizeOutline
+
+####  MINI ICONS - as displayed in the titlebar, windowlist menu, and on thumbnail icons.
+
+Style WithMiniIcon EWMHMiniIconOverride, EWMHDonateMiniIcon
+Style URxvt        UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_urxvt]
+Style ncmpcpp      UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_ncmpcpp]
+Style Transmissio* UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_transmission]
+Style *irefox*     UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_firefox]
+Style ftimer       UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_alarm]
+Style Hexchat      UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_hexchat]
+Style Gcolor2      UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_gcolor2]
+Style newsbeuter   UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_newsbeuter]
+Style w3m*         UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_browser]
+Style binge        UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_transmission]
+Style mpv          UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_mpv]
+Style streamlog    UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_mpv]
+Style Pale*        UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_palemoon]
+Style *assword*    UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_passwords]
+Style vim*         UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_gvim] 
+Style Dillo:*      UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_browser]
+Style "Tomb Mount" UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_passwords]
+Style "tail -*"    UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_logviewer]
+Style Sxiv         UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_sxiv_app]
+Style MuPDF        UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_evince]
+Style xzoom*       UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_xzoom]
+Style htop         UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_htop]
+Style Lilyterm     UseStyle WithMiniIcon, MiniIcon $[infostore.icon_mi_lilyterm]
+
+# All ("xzoom *") 
+
+##  1. Layer forced to put_layer - some windows change layers without permission. 
+##  2. FullMaximize disabled for this window - some programs have their own function.
+Style Sxiv  State $[infostore.state_forcedputlayer], State $[infostore.state_limit_maximize]
+Style mpv   State $[infostore.state_forcedputlayer], State $[infostore.state_limit_maximize]
+Style MuPDF State $[infostore.state_forcedputlayer], State $[infostore.state_limit_maximize]
+
+##  Layer forced to top_layer, for extra visibility.
+# Style "xzoom *"         StaysOnTop, State $[infostore.state_forcedtoplayer]
+
+##  Windows forced to maximize one second after being added.
+Style cmatrix                State $[infostore.state_startmaximized] 
+Style "Mozilla Firefox"      State $[infostore.state_startmaximized]
+Style "Pale Moon"            State $[infostore.state_startmaximized]
+Style "Mozilla Thunderbird"  State $[infostore.state_startmaximized]
+
+##  Windows forced to iconify one second after being added.
+Style ifup_eth0              State $[infostore.state_starticonified]
+Style Hexchat                State $[infostore.state_starticonified]
+Style htop*                  State $[infostore.state_starticonified] 
+Style streamlog              State $[infostore.state_starticonified]  
+
+##  Windows with windowlistskip - cannot be selected via WindowList menu.
+Style FF-Message    WindowListSkip, State $[infostore.state_windowlistskip]
+Style FF-NotFound   WindowListSkip, State $[infostore.state_windowlistskip] 
+Style rsstorren*    WindowListSkip, State $[infostore.state_windowlistskip]
+
+##  Windows sized to almost fit the fullscreen...
+Style NearMax   InitialMapCommand NearMaximize 
+#Style NearMax   InitialMapCommand ResizeMove 97 93 50-50w 50-50w-10p 
+Style vim*           UseStyle NearMax
+Style Manpage:*      UseStyle NearMax
+Style w3m*           UseStyle NearMax 
+Style Perldoc:*      UseStyle NearMax  
+Style MainTmux       UseStyle NearMax  
+Style urxvt-dejavu18 UseStyle NearMax  
+
+Style Dillo:*   InitialMapCommand ResizeMove 97 93 50-50w 50-50w-10p 
+
+
+####  SPECIFIC STYLES
+
+Style FF-Message      !Iconifiable, Sticky, NeverFocus, StaysOnTop 
+Style FF-NotFound     !Iconifiable, Sticky, StaysOnTop, NeverFocus 
+Style FF-Confirm      !Iconifiable, Sticky, Title, State $[infostore.state_titledwindow]
+Style FF-Okay         !Iconifiable, Sticky, Title, State $[infostore.state_titledwindow]
+Style FvwmIdent       !Iconifiable, InitialMapCommand Move 50-50w 50-50w
+Style dpaste.com      !Iconifiable, Title, State $[infostore.state_titledwindow]
+Style MuPDF           Title, State $[infostore.state_titledwindow]
+Style mpvd            Title, State $[infostore.state_titledwindow]
+Style cmatrix         !Iconifiable, Sticky 
+Style fvwm-run-dialog !Iconifiable, Sticky, StaysOnTop 
+Style MainTmux         StartsOnDesk 4 
+Style youtube-dl       InitialMapCommand ResizeMove 96c 16c 50-50w 50-50w 
+Style ~/.passwords.gpg InitialMapCommand ResizeMove 60 90 50-50w 50-50w-10p 
+Style "apt update"     InitialMapCommand ResizeMove 115c 14c 50-50w 50-50w  
+Style Psmem            InitialMapCommand ResizeMove 64c 80 50-50w 50-50w 
+Style VipeXsel*        InitialMapCommand ResizeMove 97 92 16p 16p
+Style "shutdown.sh"    Sticky, !Iconifiable, Title, State $[infostore.state_titledwindow]
+Style ifup_eth0        StartsOnDesk 5, InitialMapCommand Schedule 3000 DestroyStyle ifup_eth0
+Style htop*            StartsOnDesk $[infostore.desk_max]
+Style newsbeuter       InitialMapCommand ResizeMove 97 90 16p 16p
+
+Style "tail - thumbs.log"          StartsOnDesk 7, PositionPlacement 933p 30p 
+Style "tail - thumbs.log"          InitialMapCommand Resize 55c 36c 
+Style "tail - actions.log"         StartsOnDesk 1, PositionPlacement 300p 30p 
+Style "tail - actions.log"         InitialMapCommand Resize 140c 30c 
+Style "tail - ~/.xsession_errors_" StartsOnDesk $[infostore.desk_max], PositionPlacement 16p 16p
+Style "tail - ~/.xsession_errors_" InitialMapCommand Resize 134c 24c
+
+Style "Tomb Unmount"   !Iconifiable, InitialMapCommand ResizeMove 6c 50-50w 50-50w 
+Style "Tomb Slam"      !Iconifiable, InitialMapCommand ResizeMove 6c 50-50w 50-50w 
+Style "Tomb Mount"     !Iconifiable, Title, State $[infostore.state_titledwindow]
+Style "Tomb Mount"     InitialMapCommand ResizeMove 80c 10c 50-50w 50-50w 
+
+Style Hexchat           Title, State $[infostore.state_titledwindow]
+Style Hexchat           StartsOnDesk 5, IconifyWindowGroups
+Style Hexchat*          UseStyle NearMax   
+
+Style ftimer            Title,  State $[infostore.state_titledwindow]
+Style Stopwatch        !Title, !State $[infostore.state_titledwindow]
+Style Cloc*            !Title, !State $[infostore.state_titledwindow]
+
+Style Transmission     Title, State $[infostore.state_titledwindow]
+Style Transmission*    InitialMapCommand Resize 73 63 
+
+Style ncmpcpp          FixedSize
+Style ncmpcpp*         StartsOnDesk 2, InitialMapCommand Move ++70p ++42p
+
+Style binge*           StartsOnDesk 2, State $[infostore.state_focusfirst] 
+Style binge*           InitialMapCommand Move ++70p ++381p
+
+Style FvwmConsole_     StartsOnDesk $[infostore.desk_max], State $[infostore.state_focusfirst]
+Style FvwmConsole_     PositionPlacement 16p 448p, InitialMapCommand Resize 134c 6c
+
+Style SxivGet          StartsOnDesk 1
+Style streamlog        StartsOnDesk $[infostore.desk_max], Title, State $[infostore.state_titledwindow]
+
+
+
+
+
+##  FixedPosition
+
+####  SXIV
+
+#Style sxivget          StartsOnDesk 1
+
+
+
+# Schedule 1000 ThisWindow (!Maximized) IfNotEqual $[w.width] $[vp.width] Module FvwmSxiv $[w.id] 
+
+
+##  Firefox styles
+##
+##    Style Firefox* StartsOnPage 0 1, SkipMapping, MaxWindowSize 99 97
+##    Style Firefox* fixedpposition
+##    Style Firefox* NoTransientPPosition, NoFuncHint
+##  
+##  Dominik ^_^  ^_^
+ 
+##  
+##  The "FixedPPosition" did the trick!  Thank you for the quick help 
+##  
+##  >   Style Firefox* NoTransientPPosition, NoFuncHint
+##  
+##  These two were not necessary  (at least not in my environment)  but they
+##  didn't hurt either.
+##  
+##  Sincerely,
+##    Rainer
+
+
+
+
+####  MOZILLA STYLES
+
+Style Firefox-esr StartsOnDesk 3, Title, State $[infostore.state_titledwindow] 
+Style Firefox-esr InitialMapCommand MozillaBrowserFunc
+Style "Pale moon" StartsOnDesk 3, Title, State $[infostore.state_titledwindow]
+Style "Pale moon" InitialMapCommand MozillaBrowserFunc
+Style Thunderbird StartsOnDesk 5, Title, State $[infostore.state_titledwindow] 
+Style Thunderbird InitialMapCommand MozillaBrowserFunc
+Style "Password Required*" !Iconifiable
+
+DestroyFunc MozillaBrowserFunc
+AddToFunc   MozillaBrowserFunc
++ I ThisWindow (Navigator, !Transient) ResizeMove 80 80 50-50w 50-50w-10p 
++ I ThisWindow (Navigator, !Transient) Break 1
++ I ThisWindow (Mail, Thunderbird, !Transient) ResizeMove 80 80 50-50w 50-50w-10p 
++ I ThisWindow (Mail, Thunderbird, !Transient) Break 1
++ I ThisWindow (Dialog, Firefox-esr) GotoDesk 0 3
++ I ThisWindow (Browser, !Transient) ResizeMove 50 85 50-50w 50-50w
++ I ThisWindow ("Save As") ResizeMove 60 70 50-50w 50-50w
++ I ThisWindow (Activity, Thunderbird) ResizeMove 40 80 50-50w 50-50w
+
+####  CHROMIUM
+
+Style Chromium StartsOnDesk 3, State $[infostore.state_startmaximized]
+Style Chromium InitialMapCommand ChromiumFunc
+
+DestroyFunc ChromiumFunc
+AddToFunc   ChromiumFunc
++ I ThisWindow (chromium, !Transient) ResizeMove 80 80 50-50w 50-50w-10p 
++ I ThisWindow (chromium, !Transient) Break 1
+
+

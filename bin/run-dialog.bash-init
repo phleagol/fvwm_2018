@@ -1,0 +1,5 @@
+##  ~/.fvwm/bin/run-dialog.bash-init
+##  http://fvwmforums.org/wiki/Tips/RxvtRunDialogue/
+export PS1=""
+export HISTCONTROL="ignorespace"
+

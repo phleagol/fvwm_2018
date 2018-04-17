@@ -1,0 +1,37 @@
+## vim: syntax=fvwm
+##
+##    ┏━╸╻ ╻╻ ╻┏┳┓   ╻ ╻┏━┓╻  ╻  ┏━┓┏━┓┏━┓┏━╸┏━┓
+##    ┣╸ ┃┏┛┃╻┃┃┃┃   ┃╻┃┣━┫┃  ┃  ┣━┛┣━┫┣━┛┣╸ ┣┳┛
+##    ╹  ┗┛ ┗┻┛╹ ╹   ┗┻┛╹ ╹┗━╸┗━╸╹  ╹ ╹╹  ┗━╸╹┗╸
+##
+##  The user selects an image (with ranger) from their wallpaper collection
+##  (FolderWallpaper). The image is zoomed, cropped, resized, then written into
+##  FolderCropped, one for each desktop. FvwmBacker subsequently loads those 
+##  images as colorsets, which it then loads as the background whenever the  
+##  desktop is switched.
+
+##  Module to select, zoom, postbox-crop, resize, and save a wallpaper image.
+DestroyModuleConfig FvwmWallpaper*
+*FvwmWallpaper: DeskMax          $[infostore.desk_max]
+*FvwmWallpaper: DeskMin          $[infostore.desk_min]
+*FvwmWallpaper: FolderWallpaper  $[FVWM_WALLPAPERS]
+*FvwmWallpaper: FolderCropped    $[FVWM_CROPPED]
+*FvwmWallpaper: RangerConf       $[HOME]/.config/ranger-filepicker
+*FvwmWallpaper: Font             $[infostore.tamsyn20bold]
+*FvwmWallpaper: Geometry         111x19
+*FvwmWallpaper: Title            Wallpaper Select
+
+##  Launcher menu to change wallpaper of the current desktop or all desktops.
+DestroyMenu WallpaperMenu
+AddToMenu   WallpaperMenu
++ DynamicPopupAction MakeWallpaperMenu
+
+DestroyFunc MakeWallpaperMenu
+AddToFunc   MakeWallpaperMenu
++ I DestroyMenu recreate WallpaperMenu
++ I AddToMenu WallpaperMenu "$[infostore.icon_mm_images]&This Desk" \
+        Module FvwmWallpaper --select --desks $[desk.n]
++ I AddToMenu WallpaperMenu "$[infostore.icon_mm_images]&All Desks" \
+        Module FvwmWallpaper --select --all
+
+

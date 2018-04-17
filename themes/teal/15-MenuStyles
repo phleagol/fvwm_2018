@@ -1,0 +1,71 @@
+## vim: syntax=fvwm
+
+##    1. MENUSTYLES
+
+InfoStoreAdd menu_borderwidth 2
+
+##  From glass theme
+# Colorset $[infostore.cs_menu_inactive] fg white, bg #ababab, fgsh black, RootTransparent Buffer, Tint #eeeeee 40
+
+##  Menu colorsets.
+
+Colorset $[infostore.cs_menu_inactive] fg gray75, bg gray9,  sh #006666, hi #006666
+#    RootTransparent Buffer, Tint gray9 70
+Colorset $[infostore.cs_menu_active]   fg gray75, bg gray20, sh #006666, hi #006666
+#    RootTransparent Buffer, Tint gray9 70
+Colorset $[infostore.cs_menu_title]    fg gray75, bg gray9,  sh #006666, hi #006666
+#    RootTransparent Buffer, Tint gray9 70
+
+#Colorset $[infostore.cs_menu_inactive] fg gray75, bg gray9,  sh #006666, hi #006666
+#Colorset $[infostore.cs_menu_active]   fg gray75, bg gray20, sh #006666, hi #006666
+
+# ##  Menu colorsets.
+# Colorset $[infostore.cs_menu_inactive] fg gray55, bg gray9,  sh gray25, hi gray25
+# Colorset $[infostore.cs_menu_active]   fg gray55, bg gray20, sh gray25, hi gray25
+# Colorset $[infostore.cs_menu_title]    fg gray55, bg gray9,  sh gray25, hi gray25
+
+##  Nix the builtin help.
+DestroyMenu MenuFvwmRoot
+
+MenuStyle * BorderWidth $[infostore.menu_borderwidth]
+
+MenuStyle * ActiveFore
+MenuStyle * HilightBack
+MenuStyle * HilightTitleBack
+
+MenuStyle * MenuColorset   $[infostore.cs_menu_inactive]
+MenuStyle * ActiveColorset $[infostore.cs_menu_active]
+MenuStyle * TitleColorset  $[infostore.cs_menu_title]
+
+##  Spacing of items within menus.
+#MenuStyle * ItemFormat "%|%13.13i%.15l%.15r%.15>%|"
+MenuStyle * ItemFormat "%s%|%13.13i%.15l%.15r%|"
+MenuStyle * VerticalItemSpacing 4 4
+#MenuStyle * VerticalItemSpacing 3 3
+MenuStyle * VerticalTitleSpacing 3 3
+MenuStyle * VerticalMargins 0 2
+
+##  Offset of a submenu relative to its parent.
+MenuStyle * PopupOffset 6 100
+##  The short delay before a popup submenu opens.
+MenuStyle * PopupDelay 500
+##  Two mouse clicks within this duration are viewed as a "double-click"
+MenuStyle * DoubleClickTime 500
+##  Disable 3D relief for highlighted menu items.
+MenuStyle * Hilight3DOff
+##  Remove submenu when you move back to its parent menu.
+MenuStyle * RemoveSubmenus
+##  Submenu traingles drawn as solid rather than hollow
+MenuStyle * TrianglesSolid
+##  Warp to title
+MenuStyle * TitleWarp
+
+#InfoStoreAdd sp_mainmenu @$./images/sp_mainmenu.png@^gray9^
+#CopyMenuStyle * MainMenuStyle
+#MenuStyle MainMenuStyle ItemFormat "%s%|%8.13i%.15l%.15r%|"
+
+####  MAIN MENU
+
+
+#./mm_sidepic_update --bg gray9 --fg gray60 --fill gray30 --out $[infostore.mm_sidepic_img]
+

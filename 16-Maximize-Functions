@@ -1,0 +1,91 @@
+## vim: syntax=fvwm
+
+##  ┏┳┓┏━┓╻ ╻╻┏┳┓╻╺━┓┏━╸   ┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻┏━┓
+##  ┃┃┃┣━┫┏╋┛┃┃┃┃┃┏━┛┣╸    ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫┗━┓
+##  ╹ ╹╹ ╹╹ ╹╹╹ ╹╹┗━╸┗━╸   ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹┗━┛
+
+##  Not a proper maximize. Just resizes the current normal window 
+##  to nearly fullscreen size,
+DestroyFunc NearMaximize
+AddToFunc   NearMaximize
++ I DebugEcho NearMaximize $[w.name]
++ I ThisWindow Move $[infostore.margin_west]p $[infostore.margin_north]p ewmhiwa
++ I ThisWindow Resize br -+$[infostore.margin_east]p -+$[infostore.margin_south]p frame
+
+DestroyFunc NearMaximizeAnimated
+AddToFunc   NearMaximizeAnimated
++ I DebugEcho NearMaximizeAnimated [1]
++ I IfNoWindow Break 2
++ I ThisWindow (Maximized) Break 1 
++ I ThisWindow (FixedSize) Break 1 
++ I SendToModule FvwmAnimate reset
++ I ThisWindow (!CurrentDesk) NearMaximize
++ I ThisWindow (!CurrentDesk) Break 1
++ I Schedule 100 NearMaximizeAnimated2
+
+DestroyFunc NearMaximizeAnimated2
+AddToFunc   NearMaximizeAnimated2
++ I DebugEcho NearMaximizeAnimated [2]
++ I InfoSum east  $[vp.width]  -$[infostore.margin_east]
++ I InfoSum south $[vp.height] -$[infostore.margin_south]
++ I SendToModule FvwmAnimate animate \
+      $[w.x] $[w.y] $[w.width] $[w.height] \
+      $[infostore.margin_west] $[infostore.margin_north] \
+      $[infostore.east] $[infostore.south]
++ I Schedule 100 InfoRemoveAll east south
++ I Schedule 100 NearMaximize
+
+
+##  Alt + F10 : Also called from WindowMenu
+DestroyFunc ToggleMaximize
+AddToFunc   ToggleMaximize
++ I ThisWindow LogActions ToggleMaximize
++ I ThisWindow (State $[infostore.state_limit_maximize]) Break 1
++ I ThisWindow (Maximized) Schedule 50 UnMaximize $[*]
++ I ThisWindow (!Maximized,Maximizable) Schedule 50 FullMaximize $[*]
+
+DestroyFunc FullMaximize
+AddToFunc   FullMaximize
++ I IfNoWindow Break 2
+#  + I ThisWindow (Shaded)    Break 1 
++ I ThisWindow (Iconic)    Break 1
++ I ThisWindow (Maximized) Break 1 
++ I ThisWindow (FixedSize) Break 1 
++ I ThisWindow (!Maximizable) Break 1 
++ I ThisWindow (State $[infostore.state_limit_maximize]) Break 1
++ I LogActions FullMaximize
++ I InfoStoreAdd x_$[w.id] $[w.x]
++ I InfoStoreAdd y_$[w.id] $[w.y]
++ I InfoStoreAdd width_$[w.id] $[w.width]
++ I InfoStoreAdd height_$[w.id] $[w.height]
++ I ThisWindow (CurrentDesk) SendToModule FvwmAnimate animate \
+      $[w.x] $[w.y] $[w.width] $[w.height] \
+      0 0 $[vp.width] $[vp.height]
++ I WindowStyle !Title, !Borders
++ I UpdateStyles
++ I Maximize True 100 100
++ I WindowStyle FixedSize
+
+DestroyFunc UnMaximize
+AddToFunc   UnMaximize
++ I IfNoWindow Break 2
++ I ThisWindow (Iconic)     Break 1
+#  + I ThisWindow (Shaded)     Break 1
++ I ThisWindow (!Maximized) Break 1 
++ I LogActions UnMaximize
++ I WindowStyle VariableSize
++ I UpdateStyles
++ I ThisWindow (CurrentDesk) SendToModule FvwmAnimate animate \
+      0 0 $[vp.width] $[vp.height]   \
+      $[infostore.x_$[w.id]] $[infostore.y_$[w.id]]   \
+      $[infostore.width_$[w.id]] $[infostore.height_$[w.id]]
++ I Maximize False
++ I ThisWindow ( State $[infostore.state_titledwindow])   WindowStyle  Title
++ I ThisWindow (!State $[infostore.state_titledwindow])   WindowStyle !Title
++ I ThisWindow ( State $[infostore.state_borderedwindow]) WindowStyle  Borders
++ I ThisWindow (!State $[infostore.state_borderedwindow]) WindowStyle !Borders
+
+##  THIS LINE ABOVE CAN BE SIMPLIFIED
+##  + I ThisWindow (!Maximized) ChangeToDecorNormal
+
+

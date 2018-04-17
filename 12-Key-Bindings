@@ -1,0 +1,190 @@
+# vim: syntax=fvwm
+
+##    ╻┏ ┏━╸╻ ╻   ┏┓ ╻┏┓╻╺┳┓╻┏┓╻┏━╸┏━┓
+##    ┣┻┓┣╸ ┗┳┛   ┣┻┓┃┃┗┫ ┃┃┃┃┗┫┃╺┓┗━┓
+##    ╹ ╹┗━╸ ╹    ┗━┛╹╹ ╹╺┻┛╹╹ ╹┗━┛┗━┛
+##
+##    Ctrl +  Alt   + Delete              :  xkill - Pick Close Window 
+##            PrintScreen                 :  Screenshot of Desktop 
+##    Alt  +  PrintScreen                 :  Screenshot of Window 
+##    Win  +  F1                          :  Volume down
+##    Win  +  F2                          :  Volume up
+##    Win  +  F3                          :  Brightness down
+##    Win  +  F4                          :  Brightness up
+##    Win  +  Alt                         :  Mount Menu
+##    Win  +  Ctrl                        :  Clipboard menu
+##    Win  +  Alt   + Ctrl                :  Sync primary selection to clipboard
+##    Win  +  I                           :  Identify window
+##    Win  +  X                           :  Xdg Menu
+##    Win  +  Esc                         :  Root Menu
+##   Ctrl  +  Esc                         :  Main Menu
+##    Alt  +  F2                          :  Run dialog
+##    Alt  +  F4                          :  Close window
+##    Alt  +  F8                          :  Window Menu
+##    Alt  +  Space                       :  Window Menu
+##    Alt  +  F9                          :  Iconify window
+##  Shift  +  Alt   +  F9                 :  Deiconify all.
+##    Alt  +  F10                         :  Toggle maximize window
+##    Alt  +  F11                         :  Near maximize window
+##    Alt  +  Left                        :  Switch to left desktop 
+##    Alt  +  Right                       :  Switch to right desktop 
+##    Win  +  0-9                         :  Switch to desktop N 
+##    Win  +  arrow_keys                  :  Move window up|down|left|right in increments
+##    Win  +  numpad_arrow_keys           :  Move window to the top|bottom|left|right margin
+##    Win  +  numpad_5                    :  Move window to center
+##  Shift  +  Win   +  0-9                :  Move window to desktop N
+##  Shift  +  Win   +  Left               :  Move window to left desktop
+##  Shift  +  Win   +  Right              :  Move window to right desktop
+##    Win  +  Alt   +  arrow_keys         :  Resize window starting from NE|SE|SW|NW corner
+##    Win  +  Alt   +  numpad_arrow_keys  :  Resize/Enlarge window to the N|S|E|W screen margin
+##    Win  +  Ctrl  +  arrow_keys         :  Move cursor up|down|left|right in increments
+##    Win  +  Ctrl  +  Enter              :  Single left mouse-click
+##    Win  +  Ctrl  +  Menu               :  Single right mouse-click
+##    Win  +  T                           :  Toggle window title
+##    Win  +  B                           :  Toggle window borders
+##    Win  +  R                           :  MusicMenu (FvwmMusic)
+##    Win  +  .                           :  Next radio station or MPD track
+##    Win  +  ,                           :  Previous radio station or MPD track
+##    Win  +  /                           :  Stop music
+
+
+##  xkill - Pick Close Window 
+Key Delete A  CM  NoWindow CloseWindow
+
+##  Screenshots
+Key Print  A   M  Current MaimWindow 
+Key Print  A   N  Current MaimNow 
+
+##  Volume + brightness
+Key F1     A   4  Exec amixer set Master "3%-" -q &>/dev/null
+Key F2     A   4  Exec amixer set Master "3%+" -q &>/dev/null
+Key F3     A   4  Exec sudo /root/bin/bl_down.sh
+Key F4     A   4  Exec sudo /root/bin/bl_up.sh
+
+##  Miscellaneous
+Key M  A  4  Module FvwmMount
+Key C      A   4  OpenFvwmClip
+Key C      A  M4  Exec xsel -op | xsel -ib
+Key I      A   4  ThisWindow Module FvwmIdent
+Key X      A   4  Menu MyXdgMenu Root 40 30
+Key Escape A   4  Menu RootMenu  Root 40 30
+Key Escape A   C  Menu MainMenu  Root 44 24
+#Key Escape A   C  Menu MainMenu  Root 40 22
+Key F1     A   M  OpenCmatrix4 
+Key F2     A   M  RunDialog 
+Key F4     A   M  ThisWindow Close
+Key F8     A   M  ThisWindow (!Maximized,!Iconic) Menu NormalWindowMenu Window -0p -0p
+Key Space  A   M  ThisWindow (!Maximized,!Iconic) Menu NormalWindowMenu Window -0p -0p
+Key F9     A   M  ThisWindow IconifyWindow
+Key F9     A  SM  DeIconifyAll
+Key F10    A   M  ThisWindow Schedule 300 ToggleMaximize animate
+Key F11    A   M  ThisWindow Schedule 200 NearMaximizeAnimated
+
+##  Switch to left|right desktop
+Key Left   A   M  GotoDesk -1 $[infostore.desk_min] $[infostore.desk_max] 
+Key Right  A   M  GotoDesk  1 $[infostore.desk_min] $[infostore.desk_max] 
+
+##  Switch to desktop N
+PipeRead ' for zz in $(seq $[infostore.desk_min] $[infostore.desk_max]); \
+   do echo "Key $zz A 4 GotoDesk 0 $zz" ; done '
+
+##  Move window up|down|left|right
+InfoStoreAdd move_increment 10p
+Key Up     A   4  ThisWindow (!Iconic, !Maximized) Move w w-$[infostore.move_increment]
+Key Down   A   4  ThisWindow (!Iconic, !Maximized) Move w w+$[infostore.move_increment]
+Key Left   A   4  ThisWindow (!Iconic, !Maximized) Move w-$[infostore.move_increment] w
+Key Right  A   4  ThisWindow (!Iconic, !Maximized) Move w+$[infostore.move_increment] w
+
+##  Move window to the top|bottom|left|right margin
+InfoStoreAdd move_to_edge 10
+Key KP_Left   A  4 ThisWindow AnimatedMove ++$[infostore.margin_west]p keep ewmhiwa
+Key KP_Right  A  4 ThisWindow AnimatedMove -+$[infostore.margin_east]p keep ewmhiwa
+Key KP_Up     A  4 ThisWindow AnimatedMove keep ++$[infostore.margin_north]p ewmhiwa
+Key KP_Down   A  4 ThisWindow AnimatedMove keep -+$[infostore.margin_south]p ewmhiwa
+Key KP_Begin  A  4 ThisWindow AnimatedMove 50-50w 50-50w ewmhiwa
+
+##  Move window to desktop N
+PipeRead ' for zz in $(seq $[infostore.desk_min] $[infostore.desk_max]); \
+  do echo "Key $zz A S4 ThisWindow MoveSwitch $zz" ; done '
+
+##  Move window to left|right desktop
+Key Right  A  S4 ThisWindow MoveSwitch next
+Key Left   A  S4 ThisWindow MoveSwitch prev
+
+##  Resize window starting from the NE|SE|SW|NW corner
+Key Up     A  M4 ThisWindow ResizeWindow NorthEast 
+Key Down   A  M4 ThisWindow ResizeWindow SouthWest 
+Key Right  A  M4 ThisWindow ResizeWindow SouthEast 
+Key Left   A  M4 ThisWindow ResizeWindow NorthWest 
+
+##  Enlarge/Resize window size to the N|S|E|W screen margin
+Key KP_Right  A  M4 ThisWindow (!Iconic, !Maximized, CurrentDesk) ResizeToMargin East
+Key KP_Down   A  M4 ThisWindow (!Iconic, !Maximized, CurrentDesk) ResizeToMargin South
+Key KP_Left   A  M4 ThisWindow (!Iconic, !Maximized, CurrentDesk) ResizeToMargin West
+Key KP_Up     A  M4 ThisWindow (!Iconic, !Maximized, CurrentDesk) ResizeToMargin North
+Key KP_Begin  A  M4 ThisWindow AnimatedMove 50-50w 50-50w ewmhiwa
+
+##  Move cursor up|down|left|right incrementally. 
+InfoStoreAdd cursorkey_incx 25
+InfoStoreAdd cursorkey_incy 10
+Key Left   A  4C CursorMove -$[infostore.cursorkey_incx]p 0
+Key Right  A  4C CursorMove  $[infostore.cursorkey_incx]p 0
+Key Up     A  4C CursorMove  0 -$[infostore.cursorkey_incy]p
+Key Down   A  4C CursorMove  0  $[infostore.cursorkey_incy]p
+
+##  Left|right mouse clicks.
+Key Return A  4C FakeClick press 1 wait 250 release 1
+Key Menu   A  4C FakeClick press 3 wait 250 release 3
+
+##  Toggle window title/borders
+Key T      A   4 ThisWindow Schedule 300 ToggleTitle
+Key B      A   4 ThisWindow Schedule 300 ToggleBorders
+
+##  Music playback, radio or mpd.
+Key R      A   4 MusicMenu
+Key period A   4 MusicNext
+Key comma  A   4 MusicPrev
+Key slash  A   4 MusicToggle
+Key slash  A  S4 MusicStop
+
+
+##  ┏┓╻┏━┓╺┳╸┏━╸┏━┓
+##  ┃┗┫┃ ┃ ┃ ┣╸ ┗━┓
+##  ╹ ╹┗━┛ ╹ ┗━╸┗━┛
+
+##  Alt-F3  toggle FvwmPager
+
+##  Ctrl-Alt-SysRq-BUSIER ::  System reboot in Debian
+##  Ctrl+Alt+Escape - builtin keybinding - escape from locked ModuleSynchronous or Wait
+##      See EscapeFunc in man fvwm
+
+##  Use Silent instead of ThisWindow
+
+##  If Silent is used on a user defined function it affects all function and sub
+##  function calls until the original function exits.
+
+##  Key-bindings from other WMs
+##  http://www.keyxl.com/aaae677/56/Linux-Gnome-Window-Manager-keyboard-shortcuts.htm
+##  http://www.keyxl.com/aaac887/409/Xfce-Window-Manager-keyboard-shortcuts.htm
+##  https://www.cheatography.com/fievel/cheat-sheets/awesome-window-manager-3-x/
+##  https://urukrama.wordpress.com/2008/07/22/my-openbox-keybindings/
+##  http://xahlee.info/linux/linux_xfce_keyboard_shortcuts.html
+##  http://www.comfsm.fm/~dleeling/tech/lubuntu-lxde-openbox-desktop-keyboard-shortcuts.html
+##  https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Step_by_Step_Guide/ap-keyboard-shortcuts.html
+
+##  Ctrl+Alt+Delete - lock screen. xflock4  (xfce4)
+##  Ctrl+Alt+Delete - task manager
+##  Ctrl+Alt+Delete - backspace
+##  Ctrl+Alt+Escape - xkill                 (xfce4)
+##
+##  Alt + F1 - Applications menu ??         (xfce4)  
+##  Ctrl + Alt + T  -  terminal             (xfce4)
+
+##  Ctrl+Alt+Arrow -  Switch to workspace in direction.
+##  Ctrl+Alt+D     -  Minimize all windows and give focus to the desktop.
+##  Alt+F7         -  Move the currently focused window. 
+##  Alt+F8         -  Resize the currently focused window.  
+##  Alt+F9         -  Minimize the current window.
+##  Alt+F10        -  Maximize the current window.
+##  Shift+Ctrl+Alt+Arrow  - Move the current window to another workspace in the specified direction
+

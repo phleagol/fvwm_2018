@@ -1,0 +1,6 @@
+#!/bin/sh
+##  ~/.fvwm/bin/run-dialog
+##  http://fvwmforums.org/wiki/Tips/RxvtRunDialogue/
+rxvt +sb -n fvwm-run-dialog -T fvwm-run-dialog -b 10 -geometry 80x1 \
+-keysym.0xFF0D " &\n exit\n" -e bash --init-file $FVWM_BIN/run-dialog.bash-init
+

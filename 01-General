@@ -1,0 +1,283 @@
+## vim: syntax=fvwm
+
+##  ┏━╸┏━╸┏┓╻┏━╸┏━┓┏━┓╻     ┏━┓┏━╸╺┳╸╺┳╸╻┏┓╻┏━╸┏━┓
+##  ┃╺┓┣╸ ┃┗┫┣╸ ┣┳┛┣━┫┃     ┗━┓┣╸  ┃  ┃ ┃┃┗┫┃╺┓┗━┓
+##  ┗━┛┗━╸╹ ╹┗━╸╹┗╸╹ ╹┗━╸   ┗━┛┗━╸ ╹  ╹ ╹╹ ╹┗━┛┗━┛
+
+##  Icon theme for xdg menu. 
+InfoStoreAdd app_icon_theme FVWM_Xdg
+##  Lockfile for newsbeuter.
+InfoStoreAdd nb_lock $[HOME]/.newsbeuter/cache.db.lock
+##  Default theme.
+InfoStoreAdd theme_default dark
+##  Default background color
+InfoStoreAdd wallpaper_default_bg #495159
+
+####  PATHS
+
+##  Temporary fvwm files.
+SetEnv FVWM_TMP /tmp/fvwm
+##  Logfiles for fvwm.
+SetEnv FVWM_LOG $[FVWM_USERDIR]/log
+##  Fvwm executables.
+SetEnv FVWM_BIN $[FVWM_USERDIR]/bin
+##  Related perl modules.
+SetEnv FVWM_LIB $[FVWM_USERDIR]/lib
+##  Wallpaper collection.
+SetEnv FVWM_WALLPAPERS $[FVWM_USERDIR]/wallpapers
+##  Cropped per desktop wallpapers.
+SetEnv FVWM_CROPPED $[FVWM_USERDIR]/.walls
+##  Thumbnail cache folders.
+SetEnv FVWM_THUMBS_1 $[FVWM_TMP]/thumbs
+#SetEnv FVWM_THUMBS_2 $[FVWM_USERDIR]/.thumbicons
+##  Clipboard manager cache.
+SetEnv FVWM_CLIPS $[FVWM_TMP]/clips
+##  Fvwm icons and images.
+SetEnv FVWM_IMAGEDIR $[FVWM_USERDIR]/images
+##  XdgMenu icons cache.
+SetEnv FVWM_XDG $[FVWM_IMAGEDIR]/xdgmenu
+##  Folder for screenshots
+SetEnv FVWM_SCREENSHOTS $[HOME]/images
+##  Folder for images downloaded via sxivget
+SetEnv FVWM_SXIVGET $[FVWM_TMP]/sxiv
+##  User's encrypted passwords.
+InfoStoreAdd passwords "$[HOME]/.passwords.gpg"
+##  List file for youtube-dl urls.
+InfoStoreAdd ytdl_list $[HOME]/Youtube/list
+##  Folder containing lists for usage by vim, w3m, dillo. COULD BE INFOSTORE VARIABLE. FIXME?
+SetEnv FVWM_LISTS $[FVWM_USERDIR]/lists
+
+Exec mkdir -p $[FVWM_TMP]
+Exec mkdir -p $[FVWM_SXIVGET]
+Exec rm $[FVWM_LOG]/* 2>/dev/null || mkdir -p $[FVWM_LOG]
+Exec mkdir -p $[FVWM_CROPPED]
+Exec rm $[FVWM_SCREENSHOTS]/* 2>/dev/null || mkdir -p $[FVWM_SCREENSHOTS]
+Exec >$[infostore.ytdl_list]
+Exec rm $[FVWM_THUMBS_1]/0x* 2>/dev/null || mkdir -p $[FVWM_THUMBS_1]
+
+##  ModulePath - folders which may contain executable fvwm modules
+ModulePath +:$[FVWM_USERDIR]/bin
+# ModulePath +:$[HOME]/projects/temp-fvwmclip/014
+
+##  ImagePath :- system image folders + sub-folders of $FVWM_IMAGEDIR.
+PipeRead 'for zz in $(find $[FVWM_IMAGEDIR] -type d ) ; \
+        do echo ImagePath  +:$zz ; done '
+ImagePath +:/usr/share/icons
+ImagePath +:/usr/share/pixmaps
+ImagePath +:/usr/include/X11/bitmaps/
+
+
+####  DESKTOPS
+
+##  Desktop range :- maximum, minimum, and total count. 
+InfoStoreAdd desk_min   1
+InfoStoreAdd desk_max   8
+InfoStoreAdd desk_count 8
+
+##  Start fvwm on this desktop.
+InfoStoreAdd desk_startup 2
+
+##  1 page per desktop.
+DesktopSize 1x1
+
+##  3 px margin on RHS (EWMH)
+EwmhBaseStruts 0 3 0 0
+EwmhNumberOfDesktops $[infostore.desk_count]
+
+##  Disable edge effects. Not using a multi-page setup.
+EdgeScroll 0 0
+EdgeThickness 0
+EdgeResistance -1
+
+##  Set margin offsets, for usage by various Move/Resize functions.
+InfoStoreAdd margin_east  20
+InfoStoreAdd margin_west  20
+InfoStoreAdd margin_north 20
+InfoStoreAdd margin_south 60
+
+
+####  LAYERS
+
+InfoStoreAdd abovetoplayer   11
+InfoStoreAdd toplayer         8
+InfoStoreAdd putlayer         5
+InfoStoreAdd iconiclayer      3
+InfoStoreAdd bottomlayer      2
+InfoStoreAdd belowbottomlayer 1
+
+DefaultLayers $[infostore.bottomlayer] $[infostore.putlayer] $[infostore.toplayer]
+
+####  MOUSE
+
+##  Prevent numlock/scrolllock - may cause bugs w/bindings (see FAQ).
+IgnoreModifiers L25       
+##  Clicks less than 300ms treated as singleclick not doubleclick.
+ClickTime 300
+
+##  Cursor appearance in various contexts.
+CursorStyle WAIT         None
+CursorStyle DEFAULT      left_ptr            white black
+CursorStyle SYS          left_ptr            white black
+CursorStyle MENU         hand2               white black
+CursorStyle TITLE        left_ptr            white black
+CursorStyle ROOT         left_ptr            white black
+CursorStyle MOVE         fleur               white black
+CursorStyle RESIZE       sizing              white black
+
+CursorStyle TOP          left_ptr            white black
+CursorStyle RIGHT        left_ptr            white black
+CursorStyle LEFT         left_ptr            white black
+CursorStyle BOTTOM       left_ptr            white black
+
+CursorStyle TOP_LEFT     top_left_corner     white black
+CursorStyle TOP_RIGHT    top_right_corner    white black
+CursorStyle BOTTOM_LEFT  bottom_left_corner  white black
+CursorStyle BOTTOM_RIGHT bottom_right_corner white black
+
+
+##  MISCELLANEOUS
+
+##  Rubber-band window outlines during interactive move.
+OpaqueMoveSize 0
+##  Steps for the AnimatedMove.
+#SetAnimation 40 -.01 0 .01 .03 .08 .18 .3 .45 .6 .75 .85 .90 .94 .97 .99 1.0
+SetAnimation 30 .03 .08 .18 .33 .50 .67 .82 .92 .97  1.0
+#SetAnimation 20 .07 .22 .50 .78 .93 1.0
+HideGeometryWindow 
+
+##  These settings only affect the geometry window (now defined in theme).
+# DefaultFont -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+# DefaultColorset 0
+# Colorset 0 fg white, bg darkgrey
+
+##  Prevents long lockups whenever fvwm modules crash.
+ModuleTimeout 1
+
+Emulate Fvwm
+BugOpts FlickeringMoveWorkaround True
+# BugOpts RaiseOverUnmanaged
+# BugOpts ExplainWindowPlacement On
+
+##  Prevent focus stealing. 
+##  http://fvwmforums.org/wiki/Tips/FocusStealing/
+##  Defined in /usr/share/fvwm/ConfigFvwmDefaults
+DestroyFunc EWMHActivateWindowFunc
+AddToFunc   EWMHActivateWindowFunc I Nop
+DestroyFunc UrgencyFunc
+AddToFunc   UrgencyFunc I Nop
+DestroyFunc UrgencyDoneFunc
+AddToFunc   UrgencyDoneFunc I Nop
+
+
+####  FONT ALIASES  - redundant ?
+
+InfoStoreAdd ohsnap11          -*-ohsnap-medium-*-normal--11-*-*-*-*-*-*-*
+InfoStoreAdd ohsnap11bold      -*-ohsnap-bold-*-normal--11-*-*-*-*-*-*-*
+InfoStoreAdd ohsnap14          -*-ohsnap-medium-*-normal--14-*-*-*-*-*-*-*
+InfoStoreAdd ohsnap14bold      -*-ohsnap-bold-*-normal--14-*-*-*-*-*-*-*
+
+InfoStoreAdd terminus16        -*-terminus-medium-*-*--16-*-*-*-*-*-*-*
+InfoStoreAdd terminus16bold    -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+InfoStoreAdd terminus18        -*-terminus-medium-*-*--18-*-*-*-*-*-*-*
+InfoStoreAdd terminus18bold    -*-terminus-bold-*-*--18-*-*-*-*-*-*-*
+
+InfoStoreAdd tamsyn20          -*-tamsyn-medium-*-*--20-*-*-*-*-*-*-*
+InfoStoreAdd tamsyn20bold      -*-tamsyn-bold-*-*--20-*-*-*-*-*-*-*
+
+InfoStoreAdd square8           xft:SquareFont:style=Regular:pixelsize=8
+InfoStoreAdd square10          xft:SquareFont:style=Regular:pixelsize=10
+InfoStoreAdd square12          xft:SquareFont:style=Regular:pixelsize=12
+InfoStoreAdd square14          xft:SquareFont:style=Regular:pixelsize=14
+
+InfoStoreAdd dejavu14          xft:DejaVuSansMono:style=Book:pixelsize=14
+InfoStoreAdd dejavu14bold      xft:DejaVuSansMono:style=Bold:pixelsize=14
+InfoStoreAdd dejavu16          xft:DejaVuSansMono:style=Book:pixelsize=16
+InfoStoreAdd dejavu16bold      xft:DejaVuSansMono:style=Bold:pixelsize=16
+InfoStoreAdd dejavu18          xft:DejaVuSansMono:style=Book:pixelsize=18
+InfoStoreAdd dejavu18bold      xft:DejaVuSansMono:style=Bold:pixelsize=18
+
+##  "xft:Terminal Wide:style=Regular:pixelsize=16"
+
+
+####  PERIODIC SCHEDULE IDs (allocated)
+
+InfoStoreAdd psid_restart_fvwmanimate       1002
+InfoStoreAdd psid_restart_thumbnails        1003
+InfoStoreAdd psid_check_restart_thumbnails  1004
+InfoStoreAdd psid_check_restart_clipboard   1005
+InfoStoreAdd psid_check_restart_fvwmclip    1006
+InfoStoreAdd psid_check_restart_fvwmclip_2  1008
+InfoStoreAdd psid_update_mm_sidepic         1007
+
+
+####  WINDOW STATES (allocated)
+
+InfoStoreAdd state_titledwindow        0
+InfoStoreAdd state_borderedwindow      1
+InfoStoreAdd state_windowlistskip      4
+InfoStoreAdd state_priorityfocus      10
+InfoStoreAdd state_startmaximized     11
+InfoStoreAdd state_starticonified     12
+InfoStoreAdd state_forcedputlayer     13
+InfoStoreAdd state_forcedtoplayer     14
+InfoStoreAdd state_autoiconify        15
+InfoStoreAdd state_limit_maximize     16
+InfoStoreAdd state_focusfirst         17
+
+#InfoStoreAdd state_focusable         3
+#InfoStoreAdd state_unshadeable      15
+#InfoStoreAdd state_resizemoveflag    2
+#InfoStoreAdd state_startwithfocus     10
+#InfoStoreAdd state_fixedsize          17
+
+##  Temporary usage by ShadeWindow/UnShadeWindow.
+# InfoStoreAdd state_maximized        17
+# InfoStoreAdd state_fixedposition    18
+
+##  States 28 to 31 reserved for temporary usage only
+
+InfoStoreAdd state_temp             30
+
+
+####  COLORSET NUMBERS (allocated)  
+#
+#  From example :- http://fvwmforums.org/wiki/Config/Colorsets/
+#
+#   0 - Default
+#   1 - Inactive Windows - Titles etc
+#   2 - Active Window - Titles etc
+#   3 - Inactive Windows Borders  YYY
+#   4 - Active Windows Borders    YYY
+#   5 - Menu - Inactive Item      YYY
+#   6 - Menu - Active Item        YYY
+#   7 - Menu - Grayed Item        ?????
+#   8 - Menu - Title              YYY
+
+InfoStoreAdd cs_default                  0
+
+InfoStoreAdd cs_decor_inactive           1
+InfoStoreAdd cs_decor_active             2
+InfoStoreAdd cs_decor_border_inactive    3
+InfoStoreAdd cs_decor_border_active      4
+
+InfoStoreAdd cs_menu_inactive            5
+InfoStoreAdd cs_menu_active              6
+InfoStoreAdd cs_menu_greyed              7
+InfoStoreAdd cs_menu_title               8
+
+InfoStoreAdd cs_icon_bg                  9
+InfoStoreAdd cs_fvwmident               10
+
+InfoStoreAdd cs_mm_sidepic_text         13
+InfoStoreAdd cs_mm_sidepic_back         14
+
+InfoStoreAdd cs_wallpaper_desk1         25
+InfoStoreAdd cs_wallpaper_desk2         26
+InfoStoreAdd cs_wallpaper_desk3         27
+InfoStoreAdd cs_wallpaper_desk4         28
+InfoStoreAdd cs_wallpaper_desk5         29
+InfoStoreAdd cs_wallpaper_desk6         30
+InfoStoreAdd cs_wallpaper_desk7         31
+InfoStoreAdd cs_wallpaper_desk8         32
+
+

@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+
+##  pgrep -af 'bin/perl.*SxivMerge' 
+
+use v5.26 ;
+use strictures ;
+use warnings ;
+use feature qw(signatures) ;
+no warnings qw(experimental::signatures) ;
+
+use lib `fvwm-perllib dir`;
+use FVWM::Module;
+use Time::Piece ;
+use Getopt::Long ;
+use Path::Tiny qw( path ) ;
+#use Data::Dump qw( dump ) ;
+
+my $folder ;
+GetOptions( 'folder=s'  => \$folder) or die("Error in command line arguments\n") ;
+die "SxivMerge : $folder not found : $!" unless $folder ;
+$folder = path($folder) ;
+die "SxivMerge : $folder not found : $!" unless $folder->is_dir ;
+
+##  Establish fvwm connection.
+my $modname = "SxivMerge" ;
+my $module = new FVWM::Module( Name  => $modname ) ;
+
+##  Get desk info via pageinfo tracker.
+my %pageinfo =  %{ $module->track("PageInfo")->data } ;
+my $current_desk = $pageinfo{'desk_n'} ;
+
+##  Find (Sxiv,CurrentDesk,!Iconified) windows and the image files they display.
+my @imgfiles = () ;
+my @windows  = () ;
+my %dedup    = () ;
+my $tracker = $module->track("WindowList", "winfo") ;
+foreach my $w (@{ $tracker->windows }) {
+    next unless $w->{'res_class_name'} eq "Sxiv" ;
+    #next unless $w->{'iconified'} == 0 ;
+    next unless $w->{'desk'} == $current_desk ;
+    next unless $w->{'res_name'} =~ m{^/} and -f $w->{'res_name'} ;
+    push @windows, $w->{'win_id'} ;
+    my @files = path( $w->{'res_name'} )->lines({ chomp => 1 }) ;
+    foreach my $file (@files) {
+        next unless -f $file ;
+        push @imgfiles, $file unless $dedup{$file}++ ;
+    }
+}
+
+##  Close redundant sxiv windows.
+foreach my $wid (@windows) { $module->send("ThisWindow Close", $wid) } ;
+
+##  Open all image files in new sxiv.
+my $list = $folder->child(localtime->epoch . ".list") ; 
+my $resource  = $list->stringify ;
+$list->append( join("\n", @imgfiles) ) ;
+#my $sxivcmd = "nohup sxiv -a -sf -f " ;
+my $sxivcmd = "nohup sxiv -b -sf -a " ;
+$sxivcmd .= " -N $resource " . join(" ", @imgfiles) . " 2>/dev/null 1>&2  & " ;
+system($sxivcmd) ;
+system("echo -n $resource | xsel -ib") ;
+
+exit ;
+

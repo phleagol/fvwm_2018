@@ -1,0 +1,43 @@
+#/bin/bash
+
+name="$1"
+list="$FVWM_LISTS/$name.w3m"
+font='-*-tamsyn-bold-*-*--20-*-*-*-*-*-*-*'
+
+##  Exit if list not found.
+if [ ! -r "$list" ] ; then
+    echo "FF-Message 4 W3M : $name not found."
+    echo "DebugEcho W3M : $name not found."
+    echo "Break 1"
+    exit
+fi
+
+echo "FF-Message 4 Please wait..."
+session="$(echo -n $name | tr -c 'a-zA-Z0-9_' _ )"
+tmux kill-session -t   "$session" 1>/dev/null 2>&1 
+tmux new-session -d -s "$session" 1>/dev/null 2>&1 
+
+##  An w3m instance for each url.
+cnt=1 ; while IFS= read url ; do 
+      tmux neww -t $session:$cnt -k "sleep 2 && w3m -cookie -N +25 $url" 1>/dev/null 2>&1 
+      cnt=$((cnt+1)) 
+done <"$list" 
+
+##  Add a w3m bookmarks page
+tmux neww -t $session:999 -k "sleep 2 && w3m -cookie -N -B" 1>/dev/null 2>&1
+
+##  Open browser.
+urxvt -n "w3m - $name" -T "w3m - $name" -fn "$font" -fb "$font" -b 8 -e sh -c \
+    "sleep 2 && exec tmux selectw -t $session:1 \; attach -t $session" & 
+
+cmnd="Exec tmux kill-session -t $session 2>/dev/null"
+echo "Schedule 3000 Next (\"w3m - $name\") SetFinalCommand 1 $cmnd"
+
+
+
+
+
+
+
+
+

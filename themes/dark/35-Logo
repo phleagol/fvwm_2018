@@ -1,0 +1,22 @@
+## vim: syntax=fvwm
+
+InfoStoreAdd logo_corner $./images/logo_morishita_teal_small.png
+
+Style Logo !Title, !Borders, StaysOnBottom, NeverFocus
+Style Logo !Iconifiable, WindowListSkip, Sticky
+Style Logo PositionPlacement -+20p -+60p
+Style Logo InitialMapCommand Move -+20p -+60p
+
+DestroyModuleConfig Logo: *
+*Logo: Geometry 290x42
+*Logo: Columns  1
+*Logo: Rows     1
+*Logo: Padding  0 0
+*Logo: BoxSize  fixed
+*Logo: Frame    0
+
+*Logo: (1x1, Icon $[infostore.logo_corner])
+
+
+
+

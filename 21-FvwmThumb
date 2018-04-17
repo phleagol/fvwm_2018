@@ -1,0 +1,94 @@
+## vim: syntax=fvwm
+##
+##  ┏━╸╻ ╻╻ ╻┏┳┓╺┳╸╻ ╻╻ ╻┏┳┓┏┓ 
+##  ┣╸ ┃┏┛┃╻┃┃┃┃ ┃ ┣━┫┃ ┃┃┃┃┣┻┓
+##  ╹  ┗┛ ┗┻┛╹ ╹ ╹ ╹ ╹┗━┛╹ ╹┗━┛
+##  
+##  Caches thumbnails to ensure zero-latency iconification. 
+
+InfoStoreAdd fvwmthumb_fifo $[FVWM_TMP]/fvwmthumb.fifo
+
+InfoStoreAdd thumb_brightness  1.2
+InfoStoreAdd thumb_opacity     .6
+
+DestroyModuleConfig FvwmThumb: *
+*FvwmThumb: Fifo                  $[infostore.fvwmthumb_fifo]
+*FvwmThumb: Folder                $[FVWM_THUMBS_1]
+*FvwmThumb: Logfile               $[FVWM_LOG]/fvwmthumb.log
+*FvwmThumb: Expires               60
+*FvwmThumb: Brightness            $[infostore.thumb_brightness]
+*FvwmThumb: Opacity               $[infostore.thumb_opacity]
+*FvwmThumb: Width                 $[infostore.thumb_width]
+*FvwmThumb: Height                $[infostore.thumb_height]
+*FvwmThumb: MiniIconResize        $[infostore.thumb_miniicon_resize]
+*FvwmThumb: CanvasSize            $[infostore.thumb_canvas_size]
+*FvwmThumb: CanvasColor           $[infostore.thumb_canvas_color]
+*FvwmThumb: InsetBorderGeometry   $[infostore.thumb_inset_border_geometry]
+*FvwmThumb: InsetBorderColor      $[infostore.thumb_inset_border_color]
+
+##  If a window has a defined miniicon style, then its minicon will be inset within
+##  its thumbnail with a geometry of MiniIconResize, centered upon a canvas of
+##  size CanvasSize, and an internal border with InsetBorderGeometry. The composite 
+##  miniicon will be placed to the SE corner.  Most settings defined within the theme.
+
+DestroyFunc StopFvwmThumb
+AddToFunc   StopFvwmThumb
++ I Exec pkill -f 'bin[/]perl.*FvwmThumb'
+
+DestroyFunc RestartFvwmThumb
+AddToFunc   RestartFvwmThumb
++ I DebugEcho Restarting FvwmThumb module...
++ I StopFvwmThumb
++ I Schedule 1000 Module FvwmThumb
+
+DestroyFunc IfNotFvwmThumb
+AddToFunc   IfNotFvwmThumb
++ I InfoStoreAdd fvwmthumb running
++ I -PipeRead ' j="$(pgrep -fc \'bin[/]per[l].*bin[/]FvwmThumb\')" ; \
+        [ $j -eq 0 ] && echo "InfoStoreAdd fvwmthumb stopped" ; '
++ I Test (EnvMatch fvwmthumb stopped) $[*]
++ I InfoStoreRemove fvwmthumb
+#+ I Test (EnvMatch fvwmthumb stopped) DebugEcho FvwmThumb has been stopped...
+
+DestroyFunc RefreshThumbnail
+AddToFunc   RefreshThumbnail
++ I ThisWindow (Iconifiable,Visible,CurrentDesk) Exec \
+       pgrep -f 'bin[/]perl.*FvwmThumb' 1>/dev/null && \
+       echo ":$[w.id]: :$[w.miniiconfile]:" >> $[infostore.fvwmthumb_fifo]
+
+DestroyFunc IfThumbnail
+AddToFunc   IfThumbnail
++ I InfoStoreAdd findthumb ::
++ I Test (R $[FVWM_THUMBS_2]/$[w.class].png) InfoStoreAdd findthumb $[FVWM_THUMBS_2]/$[w.class].png
++ I Test (R $[FVWM_THUMBS_2]/$[w.name].png)  InfoStoreAdd findthumb $[FVWM_THUMBS_2]/$[w.name].png
++ I Test (R $[FVWM_THUMBS_1]/$[w.id].png)    InfoStoreAdd findthumb $[FVWM_THUMBS_1]/$[w.id].png
++ I Test (!EnvMatch infostore.findthumb ::) $[*] $[infostore.findthumb]
++ I InfoStoreRemove findthumb
+
+DestroyFunc IfNotThumbnail
+AddToFunc   IfNotThumbnail
++ I InfoStoreAdd findthumb ::
++ I Test (R $[FVWM_THUMBS_2]/$[w.class].png) InfoStoreAdd findthumb $[FVWM_THUMBS_2]/$[w.class].png
++ I Test (R $[FVWM_THUMBS_2]/$[w.name].png)  InfoStoreAdd findthumb $[FVWM_THUMBS_2]/$[w.name].png
++ I Test (R $[FVWM_THUMBS_1]/$[w.id].png)    InfoStoreAdd findthumb $[FVWM_THUMBS_1]/$[w.id].png
+#+ I Test (!EnvMatch infostore.findthumb ::) DebugEcho IfNotThumbnail $[w.name] $[infostore.findthumb]
++ I Test (EnvMatch infostore.findthumb ::)  DebugEcho IfNotThumbnail $[w.name] : not found...
++ I Test (EnvMatch infostore.findthumb ::) $[*] 
++ I InfoStoreRemove findthumb
++ I ThisWindow (Iconifiable,Visible,CurrentDesk) Exec \
+       pgrep -f 'bin[/]perl.*FvwmThumb' 1>/dev/null && \
+       echo ":$[w.id]: :$[w.miniiconfile]:" > $[infostore.fvwmthumb_fifo]
+
+DestroyFunc ThumbnailError
+AddToFunc   ThumbnailError
++ I Echo 
++ I DebugEcho [FAIL] : Iconify  : $[w.id] : $[w.name] : 
++ I DebugEcho  * $[FVWM_THUMBS_2]/$[w.class].png
++ I DebugEcho  * $[FVWM_THUMBS_2]/$[w.name].png
++ I DebugEcho  * $[FVWM_THUMBS_2]/$[w.id].png
++ I DebugEcho  * $[FVWM_THUMBS_1]/$[w.id].png
++ I Exec pgrep -fa 'bin[/]perl.*FvwmThumb' 1>&2
++ I RefreshThumbnail
+
+
+

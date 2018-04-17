@@ -1,0 +1,31 @@
+## vim: syntax=fvwm
+
+##  http://fvwmforums.org/phpBB3/viewtopic.php?t=767
+
+####  STYLES
+
+Style FvwmConky !Borders, !Handles, WindowListSkip, Sticky
+Style FvwmConky NeverFocus, StaysOnBottom, !Iconifiable 
+Style FvwmConky InitialMapCommand Schedule 1000 ConkyInitialMapFunc
+
+DestroyFunc ConkyInitialMapFunc
+AddToFunc   ConkyInitialMapFunc
++ I ThisWindow Move 0p --10p
++ I Style FvwmConky !Borders, !Handles, WindowListSkip, Sticky
++ I Style FvwmConky NeverFocus, StaysOnBottom, !Iconifiable 
++ I Style FvwmConky FixedPosition, FixedSize
+
+DestroyFunc ExecConky
+AddToFunc   ExecConky I -Exec cd $./bar && exec conky -c conkyrc 
+
+DestroyModuleConfig FvwmConky: *
+*FvwmConky: Geometry 1377x50
+*FvwmConky: Columns  1
+*FvwmConky: Rows     1
+*FvwmConky: Padding  0 0
+*FvwmConky: BoxSize  fixed
+*FvwmConky: Frame    0
+
+*FvwmConky: (1x1, Swallow (Kill,SwallowNew) conkyfvwm ExecConky)
+
+

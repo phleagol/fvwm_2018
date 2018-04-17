@@ -1,0 +1,40 @@
+## vim: syntax=fvwm
+
+##  active: #006666    inactive: #008C8C,
+##  active: #007373    inactive: #009999,
+
+#InfoStoreAdd ufetch_logo_color teal
+#InfoStoreAdd ufetch_logo      $./images/logo_ufetch.png
+InfoStoreAdd ufetch_color_logo  #006666
+InfoStoreAdd ufetch_color_0     #009999 
+#InfoStoreAdd ufetch_color_0   #006666 
+InfoStoreAdd ufetch_color_1     gray80
+
+InfoStoreAdd message_padvtxt 10
+
+##  Fallback thumbnail icons.
+SetEnv FVWM_THUMBS_2 $./thumbicons
+
+ReadFile $./03-IconTheme
+ReadFile $./06-Fonts
+ReadFile $./09-Decor
+ReadFile $./12-Colors
+ReadFile $./15-MenuStyles
+ReadFile $./16-MainMenuSidepic
+ReadFile $./18-IconStyles
+ReadFile $./31-ConkyBar
+
+AddToFunc StartFunction
++ I ReadFile $./80-Extra-WindowStyles
++ I Schedule 20000 Module FvwmButtons FvwmConky 
++ I Schedule Periodic 30000 $[infostore.psid_update_mm_sidepic] UpdateMainMenuSidepic
+
+
+#+ I ReadFile $./35-Logo
+#+ I Schedule 10000 Module FvwmButtons Logo
+
+
+
+
+
+

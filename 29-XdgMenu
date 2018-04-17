@@ -1,0 +1,53 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+##  
+##  ╻ ╻╺┳┓┏━╸   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┏╋┛ ┃┃┃╺┓   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ╹ ╹╺┻┛┗━┛   ╹ ╹┗━╸╹ ╹┗━┛
+##  
+##  XdgMenu  -  menu/functions to create the standard xdg menu.
+
+DestroyMenu MyXdgMenu
+AddToMenu   MyXdgMenu
++ DynamicPopupAction MakeMyXdgMenu
+
+DestroyFunc MakeMyXdgMenu
+AddToFunc   MakeMyXdgMenu
++ I DestroyMenu recreate MyXdgMenu
++ I Read $[FVWM_USERDIR]/.xdgmenu
++ I AddToMenu MyXdgMenu "&Tools$[infostore.icon_mm_accessories_menu]	>" Popup "Accessories"
++ I AddToMenu MyXdgMenu "&Graphics$[infostore.icon_mm_graphics_menu]	>" Popup "Graphics"
++ I AddToMenu MyXdgMenu "&Internet$[infostore.icon_mm_network_menu]	>"  Popup "Internet"
++ I AddToMenu MyXdgMenu "&Media$[infostore.icon_mm_multimedia_menu]	>"  Popup "Multimedia"
++ I AddToMenu MyXdgMenu "S&ettings$[infostore.icon_mm_settings_menu]	>" Popup "DesktopSettings"
++ I AddToMenu MyXdgMenu "&System$[infostore.icon_mm_system_menu]	>"     Popup "System"
++ I AddToMenu MyXdgMenu "" Nop
++ I AddToMenu MyXdgMenu "$[infostore.icon_mm_regen_menu]&Rebuild" RebuildMenu
+
+####  XDGMENU FUNCTIONS
+
+##  Rebuilds a XDG menu for the MainMenu.
+DestroyFunc RebuildMenu
+AddToFunc   RebuildMenu
++ I FF-Message 4 "XdgMenu : Please wait..."
++ I Exec fvwm-menu-desktop \
+   --desktop lxde \
+   --menu-type applications \
+   --theme $[infostore.app_icon_theme] \
+   --size 16 \
+   --mini-icon-dir $[FVWM_XDG] \
+   --enable-mini-icons >$[FVWM_USERDIR]/.xdgmenu 
++ I Schedule 10000 ReloadImagePath
+
+##  https://github.com/domichel/fvwm-xdg-menu
+##  Recommended : python-xdg, librsvg2-bin
+
+DestroyFunc ReloadImagePath
+AddToFunc   ReloadImagePath
++ I PipeRead 'for zz in $(find $[FVWM_IMAGEDIR] -type d ) ; \
+        do echo ImagePath  +:$zz ; done '
++ I ImagePath +:/usr/share/icons
++ I ImagePath +:/usr/share/pixmaps
++ I ImagePath +:/usr/include/X11/bitmaps/
+
+
+

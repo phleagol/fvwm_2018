@@ -1,0 +1,27 @@
+## vim: syntax=fvwm
+
+##  Geometry window
+DefaultFont        -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+
+##  Titlebar-title and icon-title.
+Style * Font       $[infostore.terminus18bold]
+Style * IconFont   null
+
+MenuStyle * Font        -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+MenuStyle * TitleFont   -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+
+##  Used by application launchers.
+InfoStoreAdd font_tiny         -*-ohsnap-medium-*-normal--14-*-*-*-*-*-*-*
+InfoStoreAdd font_tiny_bold    -*-ohsnap-bold-*-normal--14-*-*-*-*-*-*-*
+InfoStoreAdd font_small        -*-terminus-medium-*-*--16-*-*-*-*-*-*-*
+InfoStoreAdd font_small_bold   -*-terminus-bold-*-*--16-*-*-*-*-*-*-*
+InfoStoreAdd font_medium       -*-tamsyn-medium-*-*--20-*-*-*-*-*-*-*
+InfoStoreAdd font_medium_bold  -*-tamsyn-bold-*-*--20-*-*-*-*-*-*-*
+InfoStoreAdd font_large        xft:DejaVuSansMono:style=Book:pixelsize=18
+InfoStoreAdd font_large_bold   xft:DejaVuSansMono:style=Bold:pixelsize=18
+
+
+
+
+
+

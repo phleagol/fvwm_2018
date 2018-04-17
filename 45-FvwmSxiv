@@ -1,0 +1,51 @@
+## vim: syntax=fvwm
+##
+##    ┏━╸╻ ╻╻ ╻┏┳┓   ┏━┓╻ ╻╻╻ ╻
+##    ┣╸ ┃┏┛┃╻┃┃┃┃   ┗━┓┏╋┛┃┃┏┛
+##    ╹  ┗┛ ┗┻┛╹ ╹   ┗━┛╹ ╹╹┗┛ 
+##
+##    Modules/functions to customize sxiv.
+
+
+####  SxivResize  -  smart-resize for new sxiv windows.
+
+Style Sxiv     InitialMapCommand Schedule 1500 ThisWindow (!Maximized) Module SxivResize $[w.id]
+
+##  New sxiv windows are fitted to an ideal image aspect. 
+##  the target window size is specified as % of desktop.
+DestroyModuleConfig SxivResize*
+*SxivResize: MaxWidth    95
+*SxivResize: MaxHeight   88
+*SxivResize: VOffset   -20p
+
+
+####  SxivGet  -  downloads and displays images. Invoked via the LinkMenu.
+
+DestroyModuleConfig SxivGet*
+*SxivGet:    Name        SxivGet
+*SxivGet:    Geometry    130x10
+*SxivGet:    Font        $[infostore.font_small_bold]
+*SxivGet:    Folder      $[FVWM_SXIVGET]            
+*SxivGet:    Timeout     8 
+
+
+####  SxivMerge  -  merges all sxiv in current desk to just one desk. Via the RootMenu.
+
+DestroyFunc  SxivMerge
+AddToFunc    SxivMerge I Module SxivMerge --folder="$[FVWM_SXIVGET]"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

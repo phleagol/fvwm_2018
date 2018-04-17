@@ -1,0 +1,146 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+##  
+##  ╺┳┓┏━╸┏━┓╻┏ ╺┳╸┏━┓┏━┓   ┏┳┓┏━╸┏┓╻╻ ╻
+##   ┃┃┣╸ ┗━┓┣┻┓ ┃ ┃ ┃┣━┛   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ╺┻┛┗━╸┗━┛╹ ╹ ╹ ┗━┛╹     ╹ ╹┗━╸╹ ╹┗━┛
+
+DestroyMenu DesktopMenu
+AddToMenu   DesktopMenu
++ "$[infostore.icon_mm_debug_menu]De&bug	>" Popup DebugMenu
++ "$[infostore.icon_mm_identify]&Info	>"    Popup InfoMenu
++ "$[infostore.icon_mm_scrot]&Maim	>"       Popup MaimMenu
++ "$[infostore.icon_mm_scrot]Sudo	>"        Popup SudoMenu
++ "$[infostore.icon_mm_images]&Themes	>"    Popup ThemeMenu
++ "$[infostore.icon_mm_images]&Walls	>"     Popup WallpaperMenu
+
+DestroyMenu SudoMenu
+AddToMenu   SudoMenu
++ "System Backup" StartSystemBackup
+
+DestroyMenu InfoMenu
+AddToMenu   InfoMenu 
++ "$[infostore.icon_mm_urxvt]Fvwm" OpenManpage Fvwm
++ "$[infostore.icon_mm_urxvt]FvwmAnimate" OpenManpage FvwmAnimate
++ "$[infostore.icon_mm_urxvt]FvwmButtons" OpenManpage FvwmButtons
++ "$[infostore.icon_mm_urxvt]FvwmCommand" OpenManpage FvwmCommand
++ "$[infostore.icon_mm_urxvt]FvwmEvent" OpenManpage FvwmEvent
++ "$[infostore.icon_mm_urxvt]FvwmForm" OpenManpage FvwmForm
++ "FvwmPerl" Title
++ "$[infostore.icon_mm_urxvt]index" OpenPerldoc index
++ "$[infostore.icon_mm_urxvt]tutorial" OpenPerldoc tutorial
++ "$[infostore.icon_mm_urxvt]events" OpenPerldoc events
++ "$[infostore.icon_mm_urxvt]FVWM::Module" OpenPerldoc FVWM::Module
++ "$[infostore.icon_mm_urxvt]FVWM::Tracker" OpenPerldoc FVWM::Tracker
++ "$[infostore.icon_mm_urxvt]FVWM::Tracker::Colorsets" OpenPerldoc FVWM::Tracker::Colorsets
++ "$[infostore.icon_mm_urxvt]FVWM::Tracker::PageInfo" OpenPerldoc FVWM::Tracker::PageInfo
++ "$[infostore.icon_mm_urxvt]FVWM::Tracker::WindowList" OpenPerldoc FVWM::Tracker::WindowList
+
+DestroyMenu DebugMenu
+AddToMenu   DebugMenu 
++ "$[infostore.icon_mm_identify]Fvwm&Ident" NoWindow Pick Module FvwmIdent
++ "$[infostore.icon_mm_urxvt]Fvwm&Console" OpenConsole 
++ "$[infostore.icon_mm_urxvt]Ps&Mem" OpenPsmem
++ "$[infostore.icon_mm_identify]u&Fetch" UFetch
++ "" Nop
++ "$[infostore.icon_mm_logviewer]actions.log" OpenActionLog
++ "$[infostore.icon_mm_logviewer]thumbs.log" OpenThumbLog
++ "$[infostore.icon_mm_logviewer]&xsession_errors" OpenXerrors
+#+ "$[infostore.icon_mm_urxvt]Xerrors" OpenXerrors
+
+
+####  RELATED FUNCTIONS
+
+DestroyFunc UFetch
+AddToFunc   UFetch
++ I Next (ufetch) WindowListFunc
++ I None (ufetch) Exec exec \
+      urxvt -T ufetch -n ufetch -b 5 -g 55x9 -bg gray9 \
+      --color14 "$[infostore.ufetch_color_0]" \
+      --color15 "$[infostore.ufetch_color_1]" \
+      -fn terminus-16 -fb terminus-bold-16 \
+      -e sh -c "clear && $FVWM_BIN/ufetch-fvwm \"$[infostore.ufetch_color_logo]\" && cat" 
+
+DestroyFunc OpenManpage
+AddToFunc   OpenManpage I Exec exec urxvt \
+  -T "Manpage: $[0]" -n "Manpage: $[0]" \
+  -fn $[infostore.font_medium_bold] -fb $[infostore.font_medium_bold] \
+  -fg gray70 -bg gray9 -e sh -c "sleep 2 && man $[0]"
+
+DestroyFunc OpenPerldoc
+AddToFunc   OpenPerldoc I Exec exec urxvt \
+  -T "Perldoc: $[0]" -n "Perldoc: $[0]" -b 8 -g 121x31 \
+  -fn $[infostore.font_medium_bold] -fb $[infostore.font_medium_bold] \
+  -fg gray70 -bg gray9 -e sh -c "sleep 2 && fvwm-perllib man $[0]"
+
+DestroyFunc OpenConsole
+AddToFunc   OpenConsole
++ I Module FvwmConsole -terminal urxvt -n FvwmConsole -g 96x24 -b 8 -bg grey9 \
+      -fg snow3 -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold]
+
+##  This console run only during startfunction.
+DestroyFunc OpenConsole_
+AddToFunc   OpenConsole_
++ I Next (FvwmConsole_) WindowListFunc
++ I None (FvwmConsole_) Module FvwmConsole \
+      -terminal urxvt -n FvwmConsole_ -T FvwmConsole_ -b 8 -bg grey9 \
+      -fg snow3 -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold]
+
+DestroyFunc OpenXerrors
+AddToFunc   OpenXerrors
++ I Exec exec urxvt -b 8 -g 96x24 \
+      -n "tail - ~/.xsession_errors" -T "tail - ~/.xsession_errors" \
+      -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] \
+      -e tail -f $[HOME]/.xsession-errors
+
+##  This xerrors run only during startfunction.
+DestroyFunc OpenXerrors_
+AddToFunc   OpenXerrors_
++ I Next ("tail - ~/.xsession_errors_") WindowListFunc
++ I None ("tail - ~/.xsession_errors_") Exec exec urxvt -b 8 \
+      -n "tail - ~/.xsession_errors_" -T "tail - ~/.xsession_errors_" \
+      -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] \
+      -e tail -f $[HOME]/.xsession-errors
+
+##  Specific styling for first instance only.
+DestroyFunc OpenThumbLog
+AddToFunc   OpenThumbLog
++ I Exec exec urxvt -b 8 -g 96x24 \
+      -n "tail - thumbs.log" -T "tail - thumbs.log" \
+      -fn $[infostore.font_tiny] -fb $[infostore.font_tiny] \
+      -e tail -f $[FVWM_LOG]/thumbs.log
++ I Test (!EnvMatch infostore.thumblog ?*) Schedule 5000 Next ("tail - thumbs.log" ) \
+          WindowStyle StaysOnTop, !Iconifiable, NeverFocus
++ I Test (!EnvMatch infostore.thumblog ?*) Schedule 4000 DestroyStyle "tail - thumbs.log"  
++ I InfoStoreAdd thumblog 1
+
+##  Specific styling for first instance only.
+DestroyFunc OpenActionLog
+AddToFunc   OpenActionLog
++ I Exec exec urxvt -b 8 -g 125x30 \
+      -n "tail - actions.log" -T "tail - actions.log" \
+      -fn $[infostore.font_tiny] -fb $[infostore.font_tiny] \
+      -e tail -f $[FVWM_LOG]/actions.log
++ I Test (!EnvMatch infostore.actionlog ?*) Schedule 4000 DestroyStyle "tail - actions.log"  
++ I InfoStoreAdd actionlog 1
+
+DestroyFunc OpenPsmem
+AddToFunc   OpenPsmem 
++ I Exec exec urxvt -b 8 -n "Psmem" -T "Psmem" \
+      -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] \
+      -e sh -c "sudo /root/bin/psmem | less -RS "
+
+DestroyFunc StartSystemBackup
+AddToFunc   StartSystemBackup
++ I Any (systembackup) Break
++ I Schedule 2000 Exec exec urxvt -T systembackup -n systembackup \
+   -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] \
+   -g 94x30 -b 8 -bg gray9 -fg gray60 -e sudo /root/backup/backup_tarballs.sh
+
+DestroyFunc OpenSources
+AddToFunc   OpenSources 
++ I Next ("vim - /etc/apt/sources.list") WindowListFunc
++ I None ("vim - /etc/apt/sources.list") Exec exec urxvt \
+      -T "vim - /etc/apt/sources.list" -n "vim - /etc/apt/sources.list" \
+      -fn $[infostore.font_medium_bold] -fb $[infostore.font_medium_bold] \
+      -b 8 -bg gray9 -e sudo /root/bin/edit-source-dot-list
+

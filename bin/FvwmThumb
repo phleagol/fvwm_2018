@@ -1,0 +1,108 @@
+#!/usr/bin/perl
+
+##  A thumbnail daemon for FVWM.
+##  ===================================
+##  The moduleconfig is retrieved via fvwm, then two processes are started. 
+##  The first process is dedicated to reading requests from a named pipe.
+##  The second process then takes each request received, and attempts to capture 
+##  a thumbnail for that window. The two processes communicate via Shareable.
+
+use v5.26 ;
+use strict ;
+use warnings ;
+no Moo::sification ;
+
+use lib `fvwm-perllib dir` ; 
+use lib "$ENV{FVWM_LIB}" ;
+
+use FVWM::Module;
+use IPC::Shareable (':lock') ;
+
+# use File::Basename qw( dirname ) ;
+# use Cwd  qw( abs_path ) ;
+# use lib `fvwm-perllib dir`;
+# use lib dirname( abs_path $0) . '/lib' ;
+#use Data::Dump qw( dump ) ;
+
+##  Get module config from fvwm.
+my $modname = "FvwmThumb" ;
+my $module  = new FVWM::Module( Name  => $modname ) ;
+my $config  = $module->track("ModuleConfig")->data ;
+
+#dump $config ;
+
+##  Create the named pipe if not already found.
+my $fifopath = $config->{Fifo} ;
+unless (-p $fifopath) {
+    unlink $fifopath ;   
+    require POSIX ;  
+    POSIX::mkfifo($fifopath, 0700) || die "can't mkfifo $fifopath $!";
+}
+
+##  Spawn separates process to 1) read the fifo and 2) capture the thumbnail images.
+my $glue = 'FvwmThumb' ;
+my $pid_parent = $$ ;
+my $pid = fork() ;
+die "fork failed!" if not defined $pid ;
+
+##  Process 1 : Read the fifo
+if ($pid == 0) {
+
+    ##  Pass info to main process with Shareable.
+    my %info = ( ) ;
+    my %options = ( create => 1, exclusive => 0, mode => 0644, destroy => 0 ) ;
+    tie %info, 'IPC::Shareable', $glue, { %options } or die "readfifo tx: tie failed\n" ;
+
+    ##  Read from fifo and write into Shareable...
+    my $fifo ;
+    open($fifo, "+< $fifopath") or die "Named pipe \"$fifopath\" not found $!" ;
+    %info = ( "win_id" => 0, "miniicon" => "ewmh_mini_icon"  ) ;
+    while (<$fifo>) {
+        next unless /^:(\S+):\s+:(.*):$/ ;
+        $info{miniicon} = $2 ;
+        $info{win_id} = $1 ;
+    }
+    die "We should never be here $!" ;
+
+} else {
+
+    my $pid_readfifo = $pid ;
+    $pid_parent = $$ ;
+    $pid = fork() ;
+    die "fork failed!" if not defined $pid ;
+
+    ##  Process 2 : Capture thumbnails.
+    if ($pid == 0) {
+
+        sleep 6 ;
+        my %info = () ;
+        my %options = ( create => 0, exclusive => 0, mode => 0644, destroy => 0 ) ;
+        tie %info, 'IPC::Shareable', $glue, { %options } or die "readfifo tx: tie failed\n" ;
+
+        require FVWM::Thumb ;
+        say STDERR  "FvwmThumb : Starting..." ;
+        my $win_id = 0 ;
+        my $thumb = FVWM::Thumb->new({ Name => "FvwmThumb", %$config }) ;
+        while (1) {
+            sleep 1 while $info{win_id} eq $win_id ;
+            $win_id = $info{win_id} ;
+            my $icon = $info{miniicon} ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            next if $thumb->request( $win_id, $icon ) ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            next if $thumb->request( $win_id, $icon ) ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            sleep 1 ; next if $info{win_id} ne $win_id ;
+            next if $thumb->request( $win_id, $icon ) ;
+        }
+
+    } else {
+        ##  Let main process die. So yes, the FVWM module is short-lived.
+        sleep 6 ;
+        $module->terminate ;
+    }
+}
+
+

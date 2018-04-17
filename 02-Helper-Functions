@@ -1,0 +1,232 @@
+## vim: syntax=fvwm
+
+##  ╻ ╻┏━╸╻  ┏━┓┏━╸┏━┓   ┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻┏━┓
+##  ┣━┫┣╸ ┃  ┣━┛┣╸ ┣┳┛   ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫┗━┓
+##  ╹ ╹┗━╸┗━╸╹  ┗━╸╹┗╸   ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹┗━┛
+
+DestroyFunc DebugEcho
+AddToFunc   DebugEcho
++ I PipeRead 'echo "Echo $(date +%T) : $[*]" ;'
+
+DestroyFunc ReadFile
+AddToFunc   ReadFile
++ I PipeRead 'echo "DebugEcho Reading $(basename $[0])..." ; '
++ I Read $[0]
+
+##  If infostore.$[0] is undefined then do $[1-]...
+DestroyFunc IfNotDefined
+AddToFunc   IfNotDefined I Test (!EnvMatch infostore.$[0] ?*) $[1-]
+
+##  If infostore.$[0] is undefined then set to $[1]...
+DestroyFunc InfoSetDefault
+AddToFunc   InfoSetDefault I IfNotDefined $[0] InfoStoreAdd $[0] $[1]
+
+##  Unsets multiple infostore variables at once.
+DestroyFunc InfoRemoveAll
+AddToFunc   InfoRemoveAll
++ I InfoStoreAdd testzero :$[0]:
++ I Test (!EnvMatch infostore.testzero ::) InfoStoreRemove $[0]
++ I Test (!EnvMatch infostore.testzero ::) InfoRemoveAll   $[1-]
++ I InfoStoreRemove testzero
+
+##  Unsets multiple environment variables at once.
+DestroyFunc UnsetEnvs
+AddToFunc   UnsetEnvs
++ I InfoStoreAdd testzero :$[0]:
++ I Test (!EnvMatch infostore.testzero ::) UnsetEnv  $[0]
++ I Test (!EnvMatch infostore.testzero ::) UnsetEnvs $[1-]
++ I InfoStoreRemove testzero
+
+##  Set window state $[0]
+DestroyFunc SetState
+AddToFunc   SetState
++ I ThisWindow State $[0] True
++ I ThisWindow WindowStyle State $[0]
++ I UpdateStyles
+
+##  Unset window state $[0]
+DestroyFunc UnsetState
+AddToFunc   UnsetState
++ I ThisWindow State $[0] False
++ I ThisWindow WindowStyle !State $[0]
++ I UpdateStyles
+
+##  Set window layer to $[0]
+DestroyFunc SetLayer
+AddToFunc   SetLayer
++ I ThisWindow LogActions SetLayer $[0]
++ I ThisWindow WindowStyle Layer $[0]
++ I ThisWindow Layer 0 $[0]
++ I UpdateStyles
++ I ThisWindow Raise
+
+##  Set window states $[*] to True.
+DestroyFunc SetStates
+AddToFunc   SetStates
++ I InfoStoreAdd testzero :$[0]:
++ I Test (!EnvMatch infostore.testzero ::) ThisWindow State $[0] True
++ I Test (!EnvMatch infostore.testzero ::) ThisWindow WindowStyle State $[0]
++ I Test (!EnvMatch infostore.testzero ::) SetStates $[1-]
++ I Test ( EnvMatch infostore.testzero ::) UpdateStyles
++ I Test ( EnvMatch infostore.testzero ::) InfoStoreRemove testzero
+
+##  Set window states $[*] to False.
+DestroyFunc UnsetStates
+AddToFunc   UnsetStates
++ I InfoStoreAdd testzero :$[0]:
++ I Test (!EnvMatch infostore.testzero ::) ThisWindow State $[0] False
++ I Test (!EnvMatch infostore.testzero ::) ThisWindow WindowStyle !State $[0]
++ I Test (!EnvMatch infostore.testzero ::) UnsetStates $[1-]
++ I Test ( EnvMatch infostore.testzero ::) UpdateStyles
++ I Test ( EnvMatch infostore.testzero ::) InfoStoreRemove testzero
+
+##  Sum the total of all integers $[1-], and save to infostore variable $[0].
+DestroyFunc InfoSum
+AddToFunc   InfoSum
+#+ I DebugEcho InfoSum : $[*]
++ I PipeRead ' \
+  jj=$(echo $[1-] | sed -r \"s/--//g ; s/[-][+]/-/g ; s/\\s+/ + /g\" | bc) ; \
+    echo "InfoStoreAdd $[0] $jj"'
+
+##  If $[0] equals $[1], then do $[2-]...
+DestroyFunc IfEqual
+AddToFunc   IfEqual
++ I InfoStoreAdd equalstatus 0
++ I PipeRead ' [ "$[0]" = "$[1]" ] && echo "InfoStoreAdd equalstatus 1" ; '
++ I Test (EnvMatch infostore.equalstatus 1) $[2-]
++ I InfoStoreRemove equalstatus
+
+##  If $[0] no equal to $[1], then do $[2-]...
+DestroyFunc IfNotEqual
+AddToFunc   IfNotEqual
++ I InfoStoreAdd equalstatus 0
++ I PipeRead ' [ "$[0]" = "$[1]" ] && echo "InfoStoreAdd equalstatus 1" ; '
++ I Test (!EnvMatch infostore.equalstatus 1) $[2-]
++ I InfoStoreRemove equalstatus
+
+DestroyFunc FastAnimatedMove
+AddToFunc   FastAnimatedMove
++ I SetAnimation 10 .07 .22 .50 .78 .93 1.0
++ I ThisWindow AnimatedMove $[*]
++ I SetAnimation 30 .03 .08 .18 .33 .50 .67 .82 .92 .97  1.0
+
+##  If executable $[0] is not found in $PATH, first notify the user, and then do $[1-]...
+DestroyFunc IfNotFound
+AddToFunc   IfNotFound
++ I Test ( X $[0]) Break 1
++ I FF-Message 4 Not found : $[0]
++ I $[1-]
+
+##  Display "please select" message, then do $[*]...
+DestroyFunc PleaseSelectThen
+AddToFunc   PleaseSelectThen 
++ I FF-Message 4 Please select...
++ I Schedule 1000 $[*]
+
+##  Display a notification for $[0] seconds, with text of $[1-]...
+DestroyFunc Message
+AddToFunc   Message 
++ I DestroyModuleConfig FF-Message: *
++ I *FF-Message: Geometry -+20++20
++ I *FF-Message: Font $[infostore.font_small_bold]
++ I *FF-Message: PadVText $[infostore.message_padvtxt]
++ I *FF-Message: Timeout $[0] Nop ""
++ I *FF-Message: Text "$[1-]  "
++ I KillModule FvwmForm FF-Message
++ I KillModule FvwmForm FF-NotFound
++ I Module     FvwmForm FF-Message
+
+##  Alternate aliases to the Message function
+DestroyFunc FF-Message
+AddToFunc   FF-Message I Message $[*]
+DestroyFunc FF-Notify
+AddToFunc   FF-Notify  I Message $[*]
+
+DestroyFunc SaveSettings
+AddToFunc   SaveSettings I Exec echo "\
+InfoStoreAdd m3u_playlist $[infostore.m3u_playlist]\n\
+InfoStoreAdd theme $[infostore.theme]\n\
+InfoStoreAdd desk_min $[infostore.desk_min]\n\
+InfoStoreAdd desk_max $[infostore.desk_max]\n"\
+>$[FVWM_USERDIR]/.settings
+
+DestroyFunc LogActions
+AddToFunc   LogActions
++ I Exec echo "$(date +%T)   $[desk.n]   $[w.id]    $[w.class]\t$[*]" >>$[FVWM_LOG]/actions.log
+
+DestroyFunc NullFunc
+AddToFunc   NullFunc I Nop
+
+DestroyMenu NullMenu
+AddToMenu   NullMenu DynamicPopupAction Nop
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#  ##  Remove multiple infostore variables at once.
+#  DestroyFunc InfoRemoveAll
+#  AddToFunc InfoRemoveAll I PipeRead 'for jk in $[*] ; do echo "InfoStoreRemove $jk" ; done'
+
+
+# DestroyFunc RunModuleSynchronous
+# AddToFunc RunModuleSynchronous
+# + I SetEnv ARG1 $[1]
+# + I SetEnv ARG2 $[2]
+# + I SetEnv ARG3 $[3]
+# + I ModuleSynchronous $[0] 
+# + I UnsetEnvs ARG1 ARG2 ARG3
+
+
+# ##  For integers, if $[0] < $[1], then do $[2-]
+# DestroyFunc IfLower
+# AddToFunc   IfLower
+# + I InfoStoreAdd iflower 0
+# + I PipeRead ' \
+#     if [ $[0] -lt $[1] ] ; then echo "InfoStoreAdd iflower 1" ; fi ;'
+# + I Test (EnvMatch iflower) $[2-]
+# + I InfoStoreRemove iflower
+# 
+# ##  For integers, if $[0] > $[1], then do $[2-]
+# DestroyFunc IfGreater
+# AddToFunc   IfGreater
+# + I InfoStoreAdd ifgreater 0
+# + I PipeRead 'if [ $[0] -gt $[1] ] ; then echo "InfoStoreAdd ifgreater 1" ; fi'
+# + I Test (EnvMatch infostore.ifgreater 1) $[2-]
+# + I InfoStoreRemove ifgreater
+
+
+##  Display a notification for $[0] seconds, with text of $[1-]...
+#
+# + I DestroyModuleConfig FF-Message: *
+# + I *FF-Message: Geometry -+20++20
+# + I *FF-Message: Font $[infostore.font_small_bold]
+# + I *FF-Message: PadVText 20
+# + I *FF-Message: Timeout $[0] Nop ""
+# + I *FF-Message: Text "$[1-]  "
+# #+ I KillModule FvwmForm FF-Notify
+# + I KillModule FvwmForm FF-Message
+# + I KillModule FvwmForm FF-NotFound
+# + I Module FvwmForm FF-Message
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,77 @@
+## vim: syntax=fvwm
+
+##  http://fvwmforums.org/phpBB3/viewtopic.php?t=767
+
+####  STYLES
+
+Style barconky !Borders, !Handles
+Style ConkyBar !Borders, !Handles, Sticky, FixedSize, WindowListSkip 
+Style ConkyBar NeverFocus, StaysOnBottom, !Iconifiable, InitialMapCommand Move 0p 727p
+Style SquareClock* !Title, !Borders, !Iconifiable
+
+####  DEFINITION
+
+DestroyModuleConfig ConkyBar: *
+*ConkyBar: Geometry 1366x44
+*ConkyBar: Columns  1366
+*ConkyBar: Rows     44
+*ConkyBar: Padding  0 0
+*ConkyBar: BoxSize  fixed
+*ConkyBar: Frame    0
+*ConkyBar: Back     gray5
+
+*ConkyBar: (1216x44, Swallow (Kill,SwallowNew) barconky ExecConky)
+
+*ConkyBar: (140x44, Container( Frame 0, Columns 140, Rows 44))
+    *ConkyBar: (140x8)
+    *ConkyBar: (140x27, Swallow SquareClock8 SquareClock8)
+    *ConkyBar: (140x9)
+*ConkyBar: (End)
+
+*ConkyBar: (10x44)
+
+
+####  RELATED
+
+DestroyFunc StartConkyBar
+AddToFunc   StartConkyBar
++ I StopConkyBar
++ I Schedule 1000 Module FvwmButtons ConkyBar 
+
+DestroyFunc StopConkyBar
+AddToFunc   StopConkyBar
++ I -Exec pkill -f '[-]u[0-9]+ [-]c conkyrc'
++ I KillModule FvwmButtons ConkyBar 
+
+DestroyFunc ExecConky
+AddToFunc   ExecConky
++ I Schedule 500 -Exec cd $./bar && exec conky -u1 -c conkyrc 1>/dev/null 2>&1
+
+DestroyFunc SquareClock8
+AddToFunc   SquareClock8 I Exec exec \
+    urxvt -name ftimer -n SquareClock8 -T SquareClock8 -g 20x3 -bg gray5  \
+    -fn $[infostore.square8] -fb $[infostore.square8] -e $[FVWM_USERDIR]/bin/ftimer
+
+DestroyFunc SquareClock10
+AddToFunc   SquareClock10 I Exec exec \
+    urxvt -name ftimer -n SquareClock10 -T SquareClock10 -g 20x3 -bg gray5  \
+    -fn $[infostore.square10] -fb $[infostore.square10] -e $[FVWM_USERDIR]/bin/ftimer
+
+
+
+
+
+
+
+# *ConkyBar: (60x44, Container( Frame 0, Columns 60, Rows 44))
+#     *ConkyBar: (60x2)
+#     *ConkyBar: (60x40, Swallow stalonetray ExecTray)
+#     *ConkyBar: (60x2)
+# *ConkyBar: (End)
+
+# DestroyFunc ExecTray
+# AddToFunc   ExecTray
+# + I -Exec stalonetray -bg gray15 -d none --geometry 3x2 --max-geometry 3x2 \
+#        -p true -i 20 --icon-gravity NE --kludges force_icons_size \
+#        --no-shrink 2>/dev/null
+

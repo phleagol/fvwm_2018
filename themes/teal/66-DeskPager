@@ -1,0 +1,45 @@
+## vim: syntax=fvwm
+
+
+Colorset 111 RootTransparent
+Colorset 112 bg teal,  fg teal
+Colorset 113 bg white, fg white
+
+DestroyModuleConfig DeskPager: *
+*DeskPager: Geometry 210x42
+*DeskPager: Columns  210
+*DeskPager: Rows     42
+*DeskPager: Padding  0 0
+*DeskPager: BoxSize  fixed
+*DeskPager: Frame    0
+*DeskPager: Colorset 111
+
+
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+
+*DeskPager: (210x22)
+
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+*DeskPager: (40x10)
+*DeskPager: (10x10, Colorset 112)
+
+Style DeskPager PositionPlacement ++20p -+60p, InitialMapCommand Move ++20p -+60p
+Style DeskPager Sticky, !Title, !Borders, WindowListSkip, StaysOnBottom, NeverFocus, !Iconifiable
+
+KillModule FvwmButtons DeskPager
+Schedule 1000 Module FvwmButtons DeskPager
+

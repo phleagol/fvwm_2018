@@ -1,0 +1,98 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻┏━┓┏━╸┏━╸┏━┓╻ ╻   ┏━┓┏━┓╻  ┏━╸┏┳┓┏━┓┏━┓┏┓╻   ┏━╸╻ ╻┏━┓┏━┓┏┳┓╻╻ ╻┏┳┓
+##  ┣╸ ┃┣┳┛┣╸ ┣╸ ┃ ┃┏╋┛   ┣━┛┣━┫┃  ┣╸ ┃┃┃┃ ┃┃ ┃┃┗┫   ┃  ┣━┫┣┳┛┃ ┃┃┃┃┃┃ ┃┃┃┃
+##  ╹  ╹╹┗╸┗━╸╹  ┗━┛╹ ╹   ╹  ╹ ╹┗━╸┗━╸╹ ╹┗━┛┗━┛╹ ╹   ┗━╸╹ ╹╹┗╸┗━┛╹ ╹╹┗━┛╹ ╹
+
+##  Opens an url found on the system clipboard. Invoked via the clipboard manager.
+DestroyFunc OpenDillo
+AddToFunc OpenDillo 
++ I IfNotFound dillo Break 2
++ I Exec exec dillo "$(xsel -ob|head -1)" 1>/dev/null 2>&1 
+
+##  May open an url from the clipboard (xsel), from $[0], or from a catfile. If none found,
+##  either warp to an existing instance, or open new firefox window when none already exists.
+DestroyFunc OpenFirefox
+AddToFunc   OpenFirefox
++ I IfNotFound firefox Break 2
++ I InfoStoreAdd arg :$[0]:
++ I InfoStoreAdd running 1
++ I -PipeRead ' j="$(pgrep -fc firefo[x])" ; [ $j -eq 0 ] && echo "InfoStoreAdd running 0" ; '
++ I Test (EnvMatch infostore.running 0) FF-Message 4 " Starting Firefox... "
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 1) Next (Firefox*) WindowListFunc
++ I Test (!EnvMatch infostore.arg ::) Next (Firefox*) ThisWindow (Iconic) WindowListFunc
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 0) \
+        Exec exec firefox "https://duckduckgo.com/"
++ I Test (EnvMatch infostore.arg ::) Schedule 50 InfoRemoveAll arg running
++ I Test (EnvMatch infostore.arg ::) Break 1
++ I InfoStoreAdd arg $[0]
++ I Test (EnvMatch infostore.arg xsel) Exec exec bash -c \
+	"firefox \"\$( xsel -ob|head -1 )\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg xsel) Schedule 50 InfoStoreRemove arg running
++ I Test (EnvMatch infostore.arg xsel) Break 1
++ I Test (EnvMatch infostore.arg http*) Exec exec bash -c "firefox \"$[0]\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg http*) InfoStoreRemove arg running
+# + I Test (EnvMatch infostore.arg http*) Break 1
+# + I Test (R $[0]) Exec exec bash -c "firefox \"\$( head -1 <$[0] )\" 1>/dev/null 2>&1"
+# + I InfoStoreRemove arg running
+
+DestroyFunc OpenPaleMoon
+AddToFunc   OpenPaleMoon
++ I IfNotFound palemoon Break 2
+#+ I Schedule 50 Next ("Pale moon") WindowListFunc
++ I InfoStoreAdd arg :$[0]:
++ I InfoStoreAdd running 1
++ I -PipeRead ' j="$(pgrep -fc palemoo[n])" ; [ $j -eq 0 ] && echo "InfoStoreAdd running 0" ; '
++ I Test (EnvMatch infostore.running 0) FF-Message 4 " Starting Pale Moon... "
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 0) \
+        Exec exec palemoon --new-instance "https://duckduckgo.com/"
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 1) \
+        Next ("Pale moon") WindowListFunc
++ I Test (EnvMatch infostore.arg ::) Schedule 50 InfoRemoveAll arg running
++ I Test (EnvMatch infostore.arg ::) Break 1
++ I InfoStoreAdd arg $[0]
++ I Test (EnvMatch infostore.arg xsel) Test (EnvMatch infostore.running 0) \
+        Exec exec bash -c "palemoon --new-instance \"\$( xsel -ob|head -1 )\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg xsel) Test (EnvMatch infostore.running 1) \
+        Exec exec bash -c "palemoon \"\$( xsel -ob|head -1 )\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg xsel) Schedule 50 InfoStoreRemove arg running
++ I Test (EnvMatch infostore.arg xsel) Break 1
++ I Test (EnvMatch infostore.arg http*) Test (EnvMatch infostore.running 0) \
+        Exec exec bash -c "palemoon --new-instance \"$[0]\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg http*) Test (EnvMatch infostore.running 1) \
+        Exec exec bash -c "palemoon \"$[0]\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg http*) Schedule 50 InfoStoreRemove arg running
++ I Test (EnvMatch infostore.arg http*) Break 1
++ I Test (R $[0]) Test (EnvMatch infostore.running 0) \
+        Exec exec bash -c "palemoon --new-instance \"\$( head -1 <$[0] )\" 1>/dev/null 2>&1"
++ I Test (R $[0]) Test (EnvMatch infostore.running 1) \
+        Exec exec bash -c "palemoon \"\$( head -1 <$[0] )\" 1>/dev/null 2>&1"
++ I InfoStoreRemove arg running
+
+
+##  Opens a Chromium instance if none already found. Opens a webpage if url provided, either
+##  as $[0], or via the system clipboard. Always warps to current Chromium instance if found.
+##  Typically opened via the clipboard menu.
+DestroyFunc OpenChromium
+AddToFunc   OpenChromium
++ I IfNotFound chromium Break 2
++ I InfoStoreAdd arg :$[0]:
++ I InfoStoreAdd running 1
++ I -PipeRead ' j=$(pgrep -fc  "usr/.*chromiu[m]") ; [ $j -eq 0 ] && echo "InfoStoreAdd running 0" ; '
++ I Test (EnvMatch infostore.running 0) FF-Message 4 " Starting Chromium... "
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 1) Next (Chromium) WindowListFunc
++ I Test (!EnvMatch infostore.arg ::) Next (Chromium) ThisWindow (Iconic) WindowListFunc
++ I Test (EnvMatch infostore.arg ::) Test (EnvMatch infostore.running 0) \
+        Exec exec chromium "https://duckduckgo.com/"
++ I Test (EnvMatch infostore.arg ::) Schedule 50 InfoRemoveAll arg running
++ I Test (EnvMatch infostore.arg ::) Break 1
++ I InfoStoreAdd arg $[0]
++ I Test (EnvMatch infostore.arg xsel) Next (Chromium, CurrentDesk) WindowListFunc
++ I Test (EnvMatch infostore.arg xsel) Exec exec bash -c \
+	"chromium \"\$( xsel -ob|head -1 )\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg xsel) Schedule 50 InfoStoreRemove arg running
++ I Test (EnvMatch infostore.arg xsel) Break 1
++ I Test (EnvMatch infostore.arg http*) Exec exec bash -c "chromium \"$[0]\" 1>/dev/null 2>&1"
++ I Test (EnvMatch infostore.arg http*) Schedule 50 InfoStoreRemove arg running
++ I Test (EnvMatch infostore.arg http*) Break 1
+

@@ -1,0 +1,5 @@
+#!/bin/bash
+clear
+echo -n '??-*[a-z]' | xsel -ib
+/bin/ls -1 --group-directories-first --color=always ??-*[a-z] 2>/dev/null | more
+

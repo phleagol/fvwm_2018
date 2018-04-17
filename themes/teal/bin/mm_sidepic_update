@@ -1,0 +1,228 @@
+#!/bin/bash
+
+# ./mm_sidepic_update --fg gray70 --bg gray9 --out zzzz.png \
+#     --f1 '#575723' --f2 '#004C4C'  --f3 '#575723' --f4 '#004C4C'
+
+##  Opacity and Imagemagick
+##  https://www.imagemagick.org/discourse-server/viewtopic.php?f=7&t=33779
+
+#echo "XXYYZZ" 1>&2
+
+#fg=
+bg=
+hh=
+ww=
+opacity=
+lc=
+t1=
+t2=
+t3=
+t4=
+f1=
+f2=
+f3=
+f4=
+out=
+
+TEMP=$(getopt -o '' -l 'width:,height:,opacity:,bg:,lc:,t1:,t2:,t3:,t4:,f1:,f2:,f3:,f4:,out:' -- "$@")
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+    case "$1" in
+        '--width')
+            ww="$2"
+            shift 2
+            continue
+        ;;
+        '--height')
+            hh="$2"
+            shift 2
+            continue
+        ;;
+        '--opacity')
+            opacity="$2"
+            shift 2
+            continue
+        ;;
+        '--bg')
+            bg="$2"
+            shift 2
+            continue
+        ;;
+        '--lc')
+            lc="$2"
+            shift 2
+            continue
+        ;;
+        '--t1')
+            t1="$2"
+            shift 2
+            continue
+        ;;
+        '--t2')
+            t2="$2"
+            shift 2
+            continue
+        ;;
+        '--t3')
+            t3="$2"
+            shift 2
+            continue
+        ;;
+        '--t4')
+            t4="$2"
+            shift 2
+            continue
+        ;;
+        '--f1')
+            f1="$2"
+            shift 2
+            continue
+        ;;
+        '--f2')
+            f2="$2"
+            shift 2
+            continue
+        ;;
+        '--f3')
+            f3="$2"
+            shift 2
+            continue
+        ;;
+        '--f4')
+            f4="$2"
+            shift 2
+            continue
+        ;;
+        '--out')
+            out="$2"
+            shift 2
+            continue
+        ;;
+        '--')
+            shift
+            break
+        ;;
+        *)
+            echo 'Internal error!' >&2
+            exit 1
+        ;;
+    esac
+done
+
+##  Exit if any args are missing.
+noargs() { echo "* args missing" 1>&2 ; exit ; }
+[[ -z "$bg" || -z "$f1" || -z "$f2" || -z "$f3" || -z "$f4" ]]  && noargs 
+[[ -z "$t1" || -z "$t2" || -z "$t3" || -z "$t4" || -z "$out" ]] && noargs 
+[[ -z "$ww" || -z "$hh" || -z "$lc" ]] && noargs 
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../images"
+font='-xos4-terminus-bold-r-normal--16-160-72-72-c-80-iso10646-1'
+
+[[ -d "$dir" ]] || {
+    echo "* image dir not found" 1>&2 
+    exit 
+}
+
+## day, time, disk usage, + pending package updates. 
+datetime="$(date +%I:%M\ %p)"
+disk="$(df -h | grep '/mnt/data' | awk '{ print $5 }')"
+apt="$(<~/.apt_update)+" 
+
+##  Calc uptime
+tt=$(</proc/uptime)
+tt=${tt%%.*}
+minutes=$(( tt/60%60 ))
+hours=$(( tt/60/60%24 ))
+days=$(( tt/60/60/24 ))
+if [[ "$days" -eq 0 ]] 
+then printf -v timeup '%2dh %2dm' $hours $minutes
+else printf -v timeup '%2dh %2dm' $days  $hours
+fi
+
+##  Spacing : approx 25p between icon and text
+##  Note that terminus-16 chars have a 8x16 pixel spacing.
+
+x1=4
+x2=17
+
+y1=5
+y2=$((y1 + 25))
+
+nn=$(echo -n "$disk" | wc -c)
+y3=115
+y4=$((y3 + 17 + (4-nn)*8 ))
+
+nn=$(echo -n "$apt" | wc -c)
+y5=200
+#y5=185
+y6=$((y5 + 17 + (5-nn)*8))
+
+#y7=270
+y7=290
+y8=$((y7 + 25))
+
+##  positions for arrow-head dividers
+d1=105
+d2=197
+d3=283
+#d1=105
+#d2=185
+#d3=265
+
+convert -quality 100 -size ${hh}x${ww} xc:"$bg" \
+  -fill "$f1"  -draw "rectangle   0,0 $d1,23"  \
+  -fill "$f2"  -draw "rectangle $d1,0 $d2,23"  \
+  -fill "$f3"  -draw "rectangle $d2,0 $d3,23"  \
+  -fill "$f4"  -draw "rectangle $d3,0 $hh,23"  \
+  -fill "$lc"  -draw "rectangle 0,24  $hh,25"  \
+  \( $dir/slope.xbm -fill "$f2" -opaque black -fill "$f1" -opaque white \) \
+       -geometry +80+0 -composite \
+  \( $dir/slope.xbm -fill "$f3" -opaque black -fill "$f2" -opaque white \) \
+      -geometry +172+0 -composite \
+  \( $dir/slope.xbm -fill "$f4" -opaque black -fill "$f3" -opaque white \) \
+      -geometry +258+0 -composite \
+  -font "$font" -fill "$t1" -annotate +$y2+$x2 "$timeup"  \
+  -fill "$t2" -annotate +$y4+$x2 "$disk" \
+  -fill "$t3" -annotate +$y6+$x2 "$apt"  \
+  -fill "$t4" -annotate +$y8+$x2 "$datetime" \
+  \( $dir/up.xbm    -fill "$t1" -opaque black -fill "$f1" -opaque white \) \
+      -geometry +$y1+$x1 -composite \
+  \( $dir/disk.xbm  -fill "$t2" -opaque black -fill "$f2" -opaque white \) \
+      -geometry +$y3+$x1 -composite \
+  \( $dir/info.xbm  -fill "$t3" -opaque black -fill "$f3" -opaque white \) \
+      -geometry +$y5+$x1 -composite \
+  \( $dir/clock.xbm -fill "$t4" -opaque black -fill "$f4" -opaque white \) \
+      -geometry +$y7+$x1 -composite \
+  -alpha set -channel A -evaluate multiply $opacity +channel -rotate -90 $out
+
+# convert -quality 100 -size 366x28 xc:"$bg" -font "$font" -fill "$fg" \
+#     -annotate +290+18 "$datetime" xbm/clock.png -geometry +260+5 -composite -rotate -90 $out
+
+##  XBM to PNG
+##  bitmap -fr yellow -size 16x16
+##  convert clock.xbm -fill gray75 -opaque black -fill gray9 -opaque white zzzz.png
+
+##  convert close-button.xbm -fill gray75 -opaque black -fill gray9 -opaque white close-button.png
+
+
+#  http://www.imagemagick.org/discourse-server/viewtopic.php?t=23127
+# convert image_1.jpg ( image_2.jpg -resize 100x100 ) -geometry +100+100 -composite  ( image_3.jpg -resize 200x200 ) -geometry +500+500 -composite output.jpg
+
+# fg=gray70
+# bg=gray9
+# out=zzzz.png
+# 
+# f1='#636328'
+# f2='#004C4C'
+# f3='#636328'
+# f4='#004C4C'
+
+
+
+
+
+
+
+

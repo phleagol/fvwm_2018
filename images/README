@@ -1,0 +1,13 @@
+Most icons are derived from AwOken.
+http://alecive.deviantart.com/art/AwOken-163570862
+
+##  To replace duplicate images with relative symlinks (recursive)
+cd ~/.fvwm-custom
+jdupes -r -l images
+
+##  fvwm_sym_logo.png 
+##  http://www.fvwm.org/fvwm-logos/competition/Coji_Morishita/
+##  http://fvwm.sourceforge.net/logo-competition/logos/Coji_Morishita/?theme=plain
+##  http://www.fvwm.org/fvwm-logos/competition/Coji_Morishita/fvwm_sym_logo.png
+##  http://fvwm.sourceforge.net/logo-competition/logos/Coji_Morishita/fvwm_sym_logo.png
+

@@ -1,0 +1,104 @@
+## vim: syntax=fvwm
+
+##  ┏━┓╺┳╸┏━┓┏━┓╺┳╸┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻   ┏━╸╺┳╸┏━╸
+##  ┗━┓ ┃ ┣━┫┣┳┛ ┃ ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫   ┣╸  ┃ ┃  
+##  ┗━┛ ╹ ╹ ╹╹┗╸ ╹ ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹   ┗━╸ ╹ ┗━╸
+
+##  http://fvwmforums.org/wiki/Tips/FvwmStartup/
+AddToFunc   StartFunction
++ I Test (Init) DebugEcho StartFunction...
++ I RefreshWallpaperColorsets
++ I GotoDesk 0 $[infostore.desk_startup]
++ I KillModule FvwmCommandS
++ I Exec pkill FvwmCommandS
++ I Module FvwmEvent
++ I Module FvwmBacker
++ I Module FvwmAnimate
++ I Schedule  2000 OpenConsole_ 
++ I Schedule  6000 Module FvwmCommandS
++ I Schedule  7000 Module FvwmThumb
++ I Schedule 30000 StartFvwmClip
++ I Schedule 40000 Schedule Periodic 30000 $[infostore.psid_check_restart_fvwmclip] CheckRestartFvwmClip
++ I Test (Init) ScreenNominal
++ I Test (Init) OpenMainTmux
++ I Test (Init) OpenXerrors_ 
++ I Test (Init) Schedule   6000 Exec exec urxvt -T ifup_eth0 -n ifup_eth0 -b 5 -fg snow \
+    -bg grey9 -fn terminus-bold-16 -fb terminus-bold-16 -e sudo /root/bin/ifup-eth0
++ I Test (Init) Schedule  15000 OpenNcmpcpp
++ I Test (Init) Schedule  16000 OpenBinge
+#+ I Test (Init) Schedule  30000 Exec exec /usr/bin/compton -CG --config ~/.compton.conf
++ I Test (Init) Schedule  40000 Test (!R $[FVWM_USERDIR]/.xdgmenu) \
+      FF-Message 6 "Please rebuild XdgMenu..."
++ I Test (Init) Schedule  45000 OpenHtop
++ I Test (Init) Schedule  10000 -Exec until timeout 9 ping -c3 -W3 8.8.8.8 2>/dev/null 1>&2 ; do \
+    sleep 3 ; done && FvwmCommand StartWithInternet
+
+##  Update jobs that run occasionally (hours).
++ I Test (Init) Schedule 240000 IfOverdue 120 UpdateLocate
++ I Test (Init) Schedule 250000 IfOverdue 168 RebuildMenu
+
++ I Schedule Periodic  60000 $[infostore.psid_restart_fvwmanimate]      CheckRestartFvwmAnimate
+
+##  Runs only once.
+DestroyFunc StartWithInternet
+AddToFunc   StartWithInternet
++ I DebugEcho Running StartWithInternet...
++ I Schedule    50 IfOverdue 24  UpdateYoutubeDL
++ I Schedule 10000 OpenHexchat
++ I Schedule   500 DestroyFunc StartWithInternet
+
+##  Run function $[1] if $[0] hours since it last ran.
+DestroyFunc IfOverdue
+AddToFunc   IfOverdue
++ I SetEnv STAMP $[FVWM_USERDIR]/.v-$[1].tsp
++ I PipeRead ' \
+    if [ -f "\$STAMP" ] ; then \
+      j=$(date -r \$STAMP +%s) ; \
+      k=$(date -d "now - $[0] hours" +%s) ; \
+      [ "\$j" -lt "\$k" ] && l=OVERDUE || l=EARLY ; \
+    else l=OVERDUE ; \
+    fi ; echo "SetEnv ZMODE \$l" ; '
++ I Test (EnvMatch ZMODE OVERDUE) $[1-]
++ I Test (EnvMatch ZMODE OVERDUE) Exec touch $[STAMP]
++ I UnsetEnvs STAMP ZMODE
+
+DestroyFunc UpdateLocate
+AddToFunc   UpdateLocate
++ I DebugEcho Updating Locate...
++ I Exec updatedb.findutils --localpaths="$[HOME]/Documents/*" \
+       --output="$[HOME]/Documents/locatedb" && \
+       FvwmCommand "Echo Finished UpdateLocate..." 
+
+DestroyFunc UpdateYoutubeDL
+AddToFunc   UpdateYoutubeDL
++ I DebugEcho Updating youtube-dl...
++ I Exec $[HOME]/bin/youtube-dl -U 1>&2 && FvwmCommand "DebugEcho Finished UpdateYoutubeDL..." 
+
+DestroyFunc ScreenNominal
+AddToFunc   ScreenNominal I Exec sudo /root/bin/bl_set.sh 60
+
+##  A launcher for the main urxvt/tmux terminal.
+DestroyFunc OpenMainTmux
+AddToFunc   OpenMainTmux
++ I Next (MainTmux, CirculateHit) FlipFocus
++ I TestRc (Match) Break
++ I Exec exec urxvt -n "MainTmux" -T "MainTmux" -b 5 \
+    -fn $[infostore.font_large] -fb $[infostore.font_large_bold] \
+    -e sh -c " tmux kill-session -t main_tmux ; \
+    tmux new-session  -s main_tmux  \; \
+    neww -t main_tmux:1 -k -n root  \; neww -t main_tmux:2 -k -n alpha   \; \
+    neww -t main_tmux:3 -k -n bravo \; neww -t main_tmux:4 -k -n charlie \; \
+    neww -t main_tmux:5 -k -n delta \; neww -t main_tmux:6 -k -n gamma   \; \
+    splitw  -t main_tmux:6 -v -p 40 \; selectp -t main_tmux:1 -U         \; \
+    selectw -t main_tmux:1 ; "
+
+DestroyFunc OpenRssTorrent
+AddToFunc   OpenRssTorrent
++ I Exec pkill -f 'urxvt.*rsstorrent'
++ I Schedule 2000 Exec exec urxvt -T rsstorrent -n rsstorrent \
+   -fn terminus-bold-16 -fb terminus-bold-16 -b 8 -bg gray9 \
+   -fg gray60 -e sh -c "rsstorrent2 2>/tmp/stderr-rsstorrent"
+#+ I Schedule 5000 DestroyStyle rsstorrent
+
+
+

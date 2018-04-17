@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+#use utf8 ;
+use v5.24 ;
+use strict ;
+use warnings ;
+no Moo::sification ;
+
+use lib `fvwm-perllib dir` ; 
+use lib "$ENV{FVWM_LIB}" ;
+use FVWM::OpenW3m ;
+
+die "OpenW3m : name not found $!" unless $ARGV[5] ;
+my $browser = FVWM::OpenW3m->new(fvwmname => "OpenW3m", name => $ARGV[5]) ;
+$browser->start ;
+
+
+
+
+
+

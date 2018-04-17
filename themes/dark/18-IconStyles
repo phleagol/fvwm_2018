@@ -1,0 +1,36 @@
+## vim: syntax=fvwm
+
+##  The FvwmThumb module is used to ensure zero-latency iconification. 
+##  Thumbnails icons are saved in the background for when they are needed.
+
+InfoStoreAdd thumb_borderwidth            4
+InfoStoreAdd thumb_width                  205
+InfoStoreAdd thumb_height                 120
+InfoStoreAdd thumb_border_color           gray20
+InfoStoreAdd thumb_canvas_color           gray9
+InfoStoreAdd thumb_canvas_size            30x30!
+InfoStoreAdd thumb_inset_border_color     gray20
+InfoStoreAdd thumb_miniicon_resize        20x20!
+InfoStoreAdd thumb_inset_border_geometry  4x4
+InfoStoreAdd thumb_brightness             1.2
+InfoStoreAdd thumb_opacity                .6
+
+
+##  No titles beneath thumbnail icons.
+Style * !IconTitle
+##  Ignore client-provided icons.
+Style * IconOverride
+##  Ignore icon positioning provided by program.
+Style * !UseIconPosition
+##  No limitation on icon size.
+Style * IconSize -1 -1
+##  Width of surrounding border/relief.
+Style * IconBackgroundRelief $[infostore.thumb_borderwidth]
+##  Color(set) of surrounding border.
+Style * IconBackgroundColorset $[infostore.cs_icon_bg]
+##  No padding between icon and border.
+Style * IconBackgroundPadding 0
+##  Placement policy for thumbnail icons.
+Style * IconBox $[vp.width]x600-20+20, IconGrid 235 150, IconFill top right 
+# Style * IconBox $[vp.width]x300-20-54, IconGrid 235 150, IconFill right bottom
+

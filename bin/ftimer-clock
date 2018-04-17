@@ -1,0 +1,137 @@
+#!/usr/bin/perl
+
+##  A figlet clock with a shifting color pattern.
+
+#  urxvt -name ftimer -n Clock -T Clock -g 30x5 \
+#  -fn terminus-bold-16 -fb terminus-bold-16 \
+#  -e sh -c '~/.fvwm-custom/themes/teal/xcolors/ftimer && ~/.fvwm-custom/bin/ftimer-clock'
+
+use strictures ;
+use warnings ;
+use v5.26 ;
+$|++ ;
+
+use Term::Size ;
+use Text::FIGlet ;
+use Time::Piece ;
+use Encode qw( encode ) ;
+use Term::ExtendedColor qw(:all) ;
+use Math::Round qw( round ) ;
+#use Data::Dump qw( dump ) ;
+
+##  Set figlet font.
+my $font = Text::FIGlet->new(
+    -d => "/usr/share/figlet",
+    -f => "future.tlf",
+) ;
+
+##  Color pattern used for the clock. Using only the first 5 ansi terminal colors.
+my @ansicolors = (
+    2, 3, 3, 3, 4, 4, 4, 3, 3, 3, 2, 2, 1, 1, 0, 0, 0, 1, 1, 2,
+    2, 3, 3, 3, 4, 4, 4, 3, 3, 3, 2, 2, 1, 1, 0, 0, 0, 1, 1, 2,
+) ;
+
+my $idx = 0 ;               ##  Count loop iterations.
+my $color_step  = 5 ;       ##  Color pattern shifts after 5 secs
+my $color_shift = 2 ;       ##  Color pattern shifts by 2 for each consecutive row.
+
+##  Clear terminal and hide cursor. 
+##  Save tput code for moving cursor to (0,0).
+clear ;
+system("tput civis") ;
+my $tput_origin = readpipe("tput cup 0 0") ;
+Term::ExtendedColor::autoreset( 0 );
+
+##  Establish padding needed to center clock. Die if the terminal is too small.
+my @clock  = figlet_clock() ;
+sanity_check(@clock) ;
+my $fmt     = padding_format(@clock) ;
+my %padding = clock_padding(@clock) ;
+
+####  MAIN LOOP
+
+while (1) {
+    @clock  = figlet_clock() ;
+    @clock  = color_clock(@clock) ;
+    @clock  = padded_clock(@clock) ;
+    print $tput_origin ;
+    print encode('UTF-8', $_) foreach @clock ;
+    sleep 1 ;
+    $idx++ ;
+} ;
+
+####   SUBROUTINES
+
+##  Die if the terminal size is too small for the @clock.
+sub sanity_check {
+    my @clock = @_ ;
+    my $clockwidth = length $clock[0] ;
+    my ($termwidth, $termheight) = Term::Size::chars ;
+    my $clockheight = scalar @clock ;
+    die "ftimer : term too small" if $termwidth < $clockwidth or $termheight < $clockheight ;
+}
+
+##  Printf format needed to center the @clock horizontally.
+sub padding_format {
+    my @clock = @_ ;
+    my $clockwidth = length $clock[0] ;
+    my ($termwidth, $termheight) = Term::Size::chars ;
+    my $baz = $termwidth - $clockwidth ;
+    my $foo = int($baz/2) ;
+    my $bar = $baz - $foo ;
+    my $fmt = "%${foo}s%${clockwidth}s%${bar}s" ;
+    return $fmt ;
+}
+
+##  Returns empty lines needed before and after @clock to center it vertically.
+sub clock_padding {
+    my @clock = @_ ;
+    my $clockheight = scalar @clock ;
+    my $clockwidth = length $clock[0] ;
+    my ($termwidth, $termheight) = Term::Size::chars ;
+    my $baz = $termheight - $clockheight ;
+    my $foo = round $baz/2 ;
+    my $bar = $baz - $foo ;
+    my $emptyline = sprintf "%${termwidth}s", " " ;
+    my @padding_before = $emptyline x $foo ;
+    my @padding_after = $emptyline x $bar ;
+    my %padding = ( before => \@padding_before, after => \@padding_after, ) ;
+    return %padding ;
+}
+
+##  Apply color pattern to the figlet @clock.
+sub color_clock {
+    my @clock = @_ ;
+    my $offset = int($idx/$color_step)%scalar(@ansicolors) ;
+    my @output = () ;
+    for (my $row = 0 ; $row <= $#clock ; $row++ )  {
+        my $col = 0 ;
+        my @paint = @ansicolors ;
+        push @paint, splice @paint, 0, $offset ;
+        $output[$row] = '' ;
+        $output[$row] .= fg($paint[$col++], $_) foreach ( split //, $clock[$row] ) ;
+        $offset += $color_shift ;
+    } ;
+    return @output ;
+}
+
+##  Return a figlet @clock for the current time, uncolored.
+sub figlet_clock {
+    my $t = localtime ;
+    my $msg = sprintf "%02d:%02d:%02d\n", $t->hour, $t->min, $t->sec ;
+    my @text = $font->figify(-A => $msg) ;
+    return @text ;
+}
+
+##  Pad the clock such that it is centered within the terminal.
+sub padded_clock {
+    my @clock = @_ ;
+    for (my $row = 0 ; $row <= $#clock ; $row++ )  {
+        $clock[$row] = sprintf $fmt, "", $clock[$row], "" ;
+    }
+    unshift @clock, @{ $padding{before} } ;
+    push    @clock, @{ $padding{after} } ;
+    for (my $row = 0 ; $row < $#clock ; $row++)  { $clock[$row] = $clock[$row] . "\n" } ;
+    return  @clock ;
+}
+

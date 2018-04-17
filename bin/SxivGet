@@ -1,0 +1,193 @@
+#!/usr/bin/perl
+
+##  pgrep -af 'bin/perl.*SxivGet' 
+
+use v5.26 ;
+use strictures ;
+use warnings ;
+use feature qw(signatures) ;
+no warnings qw(experimental::signatures) ;
+
+use lib `fvwm-perllib dir`;
+use FVWM::Module;
+use URI::URL ;
+use Time::Piece ;
+use LWP::UserAgent ;
+use HTML::LinkExtor ;
+use IPC::Run            qw( run timeout ) ;
+use List::MoreUtils     qw( any uniq ) ;
+use Term::ExtendedColor qw( :all ) ;
+use Path::Tiny          qw( tempfile tempdir path ) ;
+use POSIX               qw( mkfifo ) ;
+#use Data::Dump         qw( dump ) ;
+
+##  Establish fvwm connection.
+my $modname = "SxivGet" ;
+my $module = new FVWM::Module( Name  => $modname ) ;
+
+##  Fvwm event handler - store info from moduleconfig into %config.
+my %config = () ; 
+$module->addHandler(M_CONFIG_INFO, sub {
+    my ($module, $event) = @_ ;
+    if ( $event->_text =~ /^\*$modname\s*(\w+)\s+(\S.*)$/ ) {
+        my $key = $1 ; (my $foo = $2) =~ s/\s+$// ;
+        $config{$key} = $foo ;
+    }
+}) ;
+
+##  Fvwm event handler - moduleconfig parsing has finished. 
+$module->addHandler(M_END_CONFIG_INFO, sub { $module->terminate }) ;
+
+##  Start parsing the fvwm moduleconfig. Loop ends when done.
+$module->send("Send_ConfigInfo") ;
+$module->event_loop ;
+
+##  Set config variables...
+my $name      = read_config("Name") ;
+my $geometry  = read_config("Geometry") ;
+my $font      = read_config("Font") ;
+my $folder    = path(read_config("Folder")) ;
+my $list      = $folder->child(localtime->epoch . ".list") ; 
+my $resource  = $list->stringify ;
+die "$modname : sxivget folder not found $!" unless $folder->is_dir ;
+
+##  LWP object for downloading.
+my $timeout   = read_config("Timeout") ;
+my $agent     = 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0' ;
+my $ua        = LWP::UserAgent->new( timeout => $timeout, agent => $agent ) ;
+
+##  Regexen that whitelist image urls found on html pages.
+my @patterns = map { qr{$_} } (
+    '^https?://i.imgur[.]com/.*(png|jpg|jpeg|gif)$', 
+    '^https?://cdn[.]scrot[.]moe/images/.*[^.]..[.](png|jpg|jpeg|gif)$', 
+    '^https?://image[.]ibb[.]co/\w+/.*[.](png|jpg|jpeg|gif)$', 
+) ;
+
+##  Scrape, download and display any image urls found.
+my $url = read_xsel_url() ;
+open_urxvt() ;
+#my $sxivcmd = $url =~ /scrot[.]moe|imgur/ ? "nohup sxiv -a -sf -f " : "nohup sxiv -b -sf -a " ;
+my @img_urls = scrape_img_urls($url) ;
+exit_with_msg("No urls found...") unless @img_urls ;
+my @img_files = get_image_files(@img_urls) ;
+exit_with_msg("No files downloaded...") unless @img_files ;
+$list->append( join("\n", @img_files) ) ;
+write_xsel($img_files[0])    if @img_files == 1 ;
+write_xsel($list->stringify) if @img_files  > 1 ;
+my $sxivcmd = "nohup sxiv -b -sf -a " ;
+$sxivcmd .= " -N $resource " . join(" ", @img_files) . " 2>/dev/null 1>&2  & " ;
+system($sxivcmd) ;
+exit_with_msg("Finished...") ;
+die "$modname : We shouldn't be here $!" ;
+
+
+####  SUBROUTINES
+
+##  Read specific value from fvwm moduleconfig - %config. 
+sub read_config {
+    my $key = shift ;
+    die "[$modname] $key not set" unless defined $config{$key} ;
+    return $config{$key} ;
+}
+
+##  https://stackoverflow.com/questions/3817687/in-perl-how-do-i-safely-create-a-temporary-fifo
+sub open_urxvt {
+    my $dir = tempdir() ;
+    my $fifo_file = $dir->child("fifo") ;
+    mkfifo($fifo_file, 0700) or die "mkfifo($fifo_file) failed: $!" ;
+    my $opts = "-fn $font -fb $font -g $geometry -b 15" ;
+    system("urxvt -n \"$name\" -T \"$name\" $opts -e cat $fifo_file &") ;
+    my $fifo_fh = $fifo_file->filehandle(">") ;
+    print $fifo_fh "\x1b\x5b\x3f\x32\x35\x6c" ;            ## Hide cursor
+    select($fifo_fh) ;
+    $|++ ;
+}
+
+##  Retrieve url from the system clipboard.
+sub read_xsel_url  {
+    my ($in, $out, $err) = ("", 0, 1) ;
+    my $retval = eval {
+        my @cmd1 = ("xsel", "-ob") ;
+        run \@cmd1, \$in, \$out, \$err, timeout(2) ;
+        1 ;
+    } ;
+    if (not $retval) {
+        my $t = localtime ;
+        say STDERR "[sxivget]: " . $t->hms . " _xsel_md5 : " . $@ ;
+        die "$0 : valid url not found" ;
+    } elsif ($err)  {
+        die "$0 : valid url not found" ;
+    } else {
+        $url = (split /\n/, $out)[0] ;
+        $url =~ s/\s.+$// ;
+        chomp $url ; 
+        die "$0 : valid url not found" unless $url and $url =~ m{^http[s]?://} ;
+        return $url ;
+    }
+}
+
+sub write_xsel  {
+    my $in = shift ;
+    my ($out, $err) = (0, 1) ;
+    my @cmd = ("pkill", "xsel") ;
+    eval { run \@cmd, timeout(2) } ;
+    @cmd = ("xsel", "-ib") ;
+    run \@cmd, \$in, \$out, \$err, timeout(2) ;
+    return 1 ;
+}
+
+
+##  If url is an html then download/scrape for image urls.
+sub scrape_img_urls {
+    my $url = shift ;
+    my @imgs ;
+    my $head = $ua->head($url) ;
+    my $p = HTML::LinkExtor->new(sub {
+       my($tag, %attr) = @_ ;
+       return if $tag !~ /img|link/ ;  
+       push(@imgs, values %attr);
+    }) ;
+
+    say fg('green6', "*"), " Get: ", $url ;
+    if ($head->content_type =~ m{text/html})  {
+        my $res = $ua->request( HTTP::Request->new(GET => $url), sub {$p->parse($_[0])} );
+        die "sxivget : LWP FAILED : $url : $!" unless $res->is_success ;
+        my $base = $res->base ;
+        @imgs = map { $_ = url($_, $base)->abs->as_string ; } @imgs ;
+    #    dump @img_urls ;
+        my @links = () ; my %foo   = () ; 
+        foreach my $link ( uniq(@imgs) ) {
+            next unless any { $link =~ $_ } @patterns ;
+            next if $foo{$link}++ ;
+            push @links, $link ;
+        }
+        return @links ;
+    } elsif ($head->content_type =~ m{image/}) {
+        return ( $url ) ;
+    }
+}
+
+sub get_image_files {
+    my @imgs = @_ ;
+    my @files = () ;
+    my $cnt = 0 ; my $total = scalar @imgs ;
+    foreach my $url (@img_urls) {
+        say fg('green6', "* "), ++$cnt. "/$total ", $url ;
+        my $tmp = tempfile( DIR => $folder ) ;
+        my $res = $ua->get( $url, ":content_file" => $tmp->stringify ) ;
+        next unless $res->is_success and $res->content_type =~ /^image/ ;
+        (my $type = $res->content_type) =~ s{^image/}{} ;
+        my $file = $tmp->copy($tmp . ".$type") ;
+        push @files, $file->stringify ;
+    }
+    return @files ;
+}
+
+sub exit_with_msg {
+    my $msg = shift ;
+    say fg('red1', "* "), $msg ;
+    sleep 4 ;
+    exit ;
+}
+
+

@@ -1,0 +1,144 @@
+## vim: syntax=fvwm
+##  
+##  ┏┳┓┏━┓╻ ╻   ╻ ╻╺┳╸╺┳┓╻     ┏━┓╺┳╸┏━┓┏━╸┏━┓┏┳┓╻  ╻┏┓╻╻┏ 
+##  ┃┃┃┣━┛┃┏┛   ┗┳┛ ┃  ┃┃┃     ┗━┓ ┃ ┣┳┛┣╸ ┣━┫┃┃┃┃  ┃┃┗┫┣┻┓
+##  ╹ ╹╹  ┗┛     ╹  ╹ ╺┻┛┗━╸   ┗━┛ ╹ ╹┗╸┗━╸╹ ╹╹ ╹┗━╸╹╹ ╹╹ ╹
+
+####  STREAMLINK
+
+##  BEST IN A SEPARATE URXVT THAT AUTO ICONIFIES
+
+DestroyFunc Stream480p
+AddToFunc   Stream480p 
++ I IfNotFound streamlink Break 2
++ I Next (streamlink) WindowListFunc
++ I Any  (streamlink) Break 1
++ I FF-Message 2 StreamLink : Please wait... 
++ I Exec exec urxvt -T streamlog -n streamlog -b 8 -bg gray9 -g 120x10 \
+    -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] -e sh -c \
+    'streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" "$(xsel -ob)" 480p || \
+     ( FvwmCommand "FF-Message 5 StreamLink abort..." ; \
+       echo "Streamlink failed!" | toilet --gay -f future.tlf ; sleep 30 ; ) '
+
+DestroyFunc Stream720p
+AddToFunc   Stream720p 
++ I IfNotFound streamlink Break 2
++ I Next (streamlink) WindowListFunc
++ I Any  (streamlink) Break 1
++ I FF-Message 2 StreamLink : Please wait... 
++ I Exec exec urxvt -T streamlog -n streamlog -b 8 -bg gray9 -g 120x10 \
+    -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] -e sh -c \
+    'streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" "$(xsel -ob)" 720p || \
+     ( FvwmCommand "FF-Message 5 StreamLink abort..." ; \
+       echo "Streamlink failed!" | toilet --gay -f future.tlf ; sleep 30 ; ) '
+
+DestroyFunc StreamBest
+AddToFunc   StreamBest 
++ I IfNotFound streamlink Break 2
++ I Next (streamlink) WindowListFunc
++ I Any  (streamlink) Break 1
++ I FF-Message 2 StreamLink : Please wait... 
++ I Exec exec urxvt -T streamlog -n streamlog -b 8 -bg gray9 -g 120x10 \
+    -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] -e sh -c \
+    'streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" \
+    "$(xsel -ob)" 720p,600p,576p,480p,360p,240p,best || \
+     ( FvwmCommand "FF-Message 5 StreamLink abort..." ; \
+       echo "Streamlink failed!" | toilet --gay -f future.tlf ; sleep 30 ; ) '
+
+# DestroyFunc Stream720p
+# AddToFunc   Stream720p 
+# + I IfNotFound streamlink Break 2
+# + I Next (streamlink) WindowListFunc
+# + I Any  (streamlink) Break 1
+# + I FF-Message 2 StreamLink : Please wait... 
+# + I Exec streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" \
+#    "$(xsel -ob)" 720p || FvwmCommand "FF-Message 5 StreamLink abort..."
+
+# DestroyFunc Stream480p
+# AddToFunc   Stream480p 
+# + I IfNotFound streamlink Break 2
+# + I Next (streamlink) WindowListFunc
+# + I Any  (streamlink) Break 1
+# + I FF-Message 2 StreamLink : Please wait... 
+# + I Exec streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" \
+#     "$(xsel -ob)" 480p || FvwmCommand "FF-Message 5 StreamLink abort..."
+
+# DestroyFunc StreamBest
+# AddToFunc   StreamBest 
+# + I IfNotFound streamlink Break 2
+# + I Next (streamlink) WindowListFunc
+# + I Any  (streamlink) Break 1
+# + I FF-Message 2 StreamLink : Please wait... 
+# + I Exec streamlink -p "/usr/bin/mpv --cache=5000 --x11-name streamlink" \
+#     "$(xsel -ob)" 720p,600p,576p,480p,360p,240p,best || FvwmCommand "FF-Message 5 StreamLink abort..."
+
+####  YOUTUBE-DL
+
+DestroyFunc Ytdl480p
+AddToFunc   Ytdl480p 
++ I FF-Message 4 "Ytdl: Job Added."
++ I Exec echo "tsp -f -n youtube-dl -f \"$[infostore.ytformat480p]\" \
+            $(xsel -ob|head -1)" >> $[infostore.ytdl_list]
+
+DestroyFunc Ytdl720p
+AddToFunc   Ytdl720p 
++ I FF-Message 4 "Ytdl: Job Added."
++ I Exec echo "tsp -f -n youtube-dl -f \"$[infostore.ytformat720p]\" \
+            $(xsel -ob|head -1)" >> $[infostore.ytdl_list]
+
+DestroyFunc YtdlBest
+AddToFunc   YtdlBest 
++ I FF-Message 4 "Ytdl: Job Added."
++ I Exec echo "tsp -f -n youtube-dl $(xsel -ob|head -1)" >> $[infostore.ytdl_list]
+
+
+####  MPV PLAYER
+
+DestroyFunc MPV720p
+AddToFunc   MPV720p
++ I IfNotFound mpv Break 2
++ I FF-Message 4 "MPV: Please wait..."
++ I Exec mpv --loop-file --quiet --ytdl --no-terminal --ytdl-format="$[infostore.ytformat720p]" \
+      "$(xsel -ob|head -1)" 1>/dev/null 2>&1 || FvwmCommand "FF-Message 10 \"MPV abort.\""
+
+DestroyFunc MPV360p
+AddToFunc   MPV360p
++ I IfNotFound mpv Break 2
++ I FF-Message 4 "MPV: Please wait..."
++ I Exec mpv --loop-file --quiet --ytdl --no-terminal --ytdl-format="$[infostore.ytformat360p]" \
+      "$(xsel -ob|head -1)" 1>/dev/null 2>&1 || FvwmCommand "FF-Message 10 \"MPV abort.\""
+
+DestroyFunc MPV4Chan
+AddToFunc   MPV4Chan
++ I IfNotFound mpv Break 2
++ I FF-Message 4 "MPV: Please wait..."
++ I Exec wget -q $(xsel -ob) -O - | tr ' ' '\n' | \
+    sed -nr 's|^.*=["]//([^"]+[.]webm)["].*$|http://\1|p' | sort | uniq | \
+    mpv --loop-file --loop-playlist --no-terminal --playlist=- || \
+    FvwmCommand "FF-Message 10 MPV abort"
+
+DestroyFunc MPVBest
+AddToFunc   MPVBest
++ I IfNotFound mpv Break 2
++ I FF-Message 4 "MPV: Please wait..."
++ I SetEnv TEMP no
++ I PipeRead '[ -n "$[0]" ] && echo "SetEnv TEMP yes" || echo Nop ; '
++ I Test (EnvMatch TEMP yes) Exec \
+      mpv --loop-file --quiet --ytdl --no-terminal "$[0]" 1>/dev/null 2>&1 || \
+      FvwmCommand "FF-Message 10 \"MPV abort.\""
++ I Test (EnvMatch TEMP no) Exec \
+      mpv --loop-file --quiet --ytdl --no-terminal "$(xsel -ob|head -1)" 1>/dev/null 2>&1 || \
+      FvwmCommand "FF-Message 10 \"MPV abort.\""
++ I UnsetEnv TEMP 
+
+
+####  MPV/YTDL VIDEO FORMATS
+
+InfoStoreAdd ytformat720p "22/136+251/136+171/136+140/136+250/136+249/247+251/247+171/247+140/247+250/247+249/135+251/135+171/135+140/135+250/135+249/244+251/244+171/244+140/244+250/244+249/18/134+251/134+171/134+140/134+250/134+249/243+251/243+171/243+140/243+250/243+249"
+InfoStoreAdd ytformat480p "135+251/135+171/135+140/135+250/135+249/244+251/244+171/244+140/244+250/244+249/18/134+251/134+171/134+140/134+250/134+249/243+251/243+171/243+140/243+250/243+249"
+InfoStoreAdd ytformat360p "18/134+251/134+171/134+140/134+250/134+249/243+251/243+171/243+140/243+250/243+249"
+
+
+
+
+

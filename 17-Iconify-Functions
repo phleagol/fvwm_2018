@@ -1,0 +1,139 @@
+## vim: syntax=fvwm
+
+##  ╻┏━╸┏━┓┏┓╻╻┏━╸╻ ╻   ┏━╸╻ ╻┏┓╻┏━╸╺┳╸╻┏━┓┏┓╻┏━┓
+##  ┃┃  ┃ ┃┃┗┫┃┣╸ ┗┳┛   ┣╸ ┃ ┃┃┗┫┃   ┃ ┃┃ ┃┃┗┫┗━┓
+##  ╹┗━╸┗━┛╹ ╹╹╹   ╹    ╹  ┗━┛╹ ╹┗━╸ ╹ ╹┗━┛╹ ╹┗━┛
+##
+##  (De)IconifyAll and IconifyExcept functions are all somewhat experimental.
+
+InfoStoreAdd iconify_delay1 100
+InfoStoreAdd iconify_delay2 400
+InfoStoreAdd iconify_delay3 500
+
+##  Called from NormalWindowMenu, or from FvwmEvent when state_starticonified .
+DestroyFunc IconifyWindow
+AddToFunc   IconifyWindow
++ I IfNoWindow Break 2
++ I ThisWindow (!Iconifiable) Break 1
++ I ThisWindow (Transient) Break 1
++ I ThisWindow (Iconic) Break 1
++ I ThisWindow (State $[infostore.state_windowlistskip]) Break 1
++ I IfNotThumbnail Break 2
++ I SendToModule FvwmAnimate reset
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate pause
+#+ I InfoStoreAdd layer_$[w.id] $[w.layer]
+#+ I DebugEcho IconifyWindow1 $[w.name] : InfoStoreAdd layer_$[w.id] $[w.layer]
++ I IfThumbnail WindowStyle NeverFocus, Icon 
++ I Schedule $[infostore.iconify_delay1] IconifyWindow2
+
+DestroyFunc IconifyWindow2
+AddToFunc   IconifyWindow2 
+#+ I ThisWindow DebugEcho IconifyWindow2 $[w.name] : Layer Saved : $[infostore.layer_$[w.id]]
+#+ I ThisWindow SetLayer $[infostore.iconiclayer]
++ I ThisWindow Iconify True
++ I Schedule 600 SendToModule FvwmAnimate reset
++ I RestoreFocus
+
+##  *  The reliability of FvwmAnimate is improved with "reset" and delay.
+
+####  DEICONIFY WINDOW
+
+##  Only called from the CurrentDesk via the WindowList menu. CORRECT
+DestroyFunc DeIconifyWindow
+AddToFunc   DeIconifyWindow
++ I IfNoWindow Break 2
++ I ThisWindow (!Iconic) Break 1
++ I SendToModule FvwmAnimate reset
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate pause
++ I ThisWindow WindowStyle ClickToFocus
++ I SetLayer $[infostore.layer_$[w.id]]
++ I Schedule $[infostore.iconify_delay1] DeIconifyWindow2
+
+DestroyFunc DeIconifyWindow2
+AddToFunc   DeIconifyWindow2 
++ I IfNoWindow Break 2
++ I ThisWindow Iconify False
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate reset
++ I All (CurrentDesk, Iconic) PlaceAgain Anim Icon
++ I ThisWindow FlipFocus NoWarp
++ I ThisWindow WarpToWindow 50 50
++ I ThisWindow FlipFocus NoWarp
+
+
+####  ICONIFY ALL WINDOWS
+
+DestroyFunc IconifyAll
+AddToFunc   IconifyAll
++ I All UnsetStates 29 30 31
++ I All (!Iconic,CurrentDesk,Iconifiable,!State $[infostore.state_windowlistskip]) SetStates 31
++ I All (State 31) IfNotThumbnail UnsetStates 31
++ I ThisWindow (State 31,Focused) SetStates 30
+#+ I All (State 31) InfoStoreAdd layer_$[w.id] $[w.layer]
++ I SendToModule FvwmAnimate reset
++ I Next (State 31,!State 30) Schedule $[infostore.iconify_delay1] IconifyAll2
++ I None (State 31,!State 30) Next (State 30) Schedule $[infostore.iconify_delay1] IconifyAll2
+
+DestroyFunc IconifyAll2
+AddToFunc   IconifyAll2
++ I ThisWindow InfoStoreAdd layer_$[w.id] $[w.layer]
++ I ThisWindow DebugEcho IconifyAll2 : Layer stored : $[infostore.layer_$[w.id]] , $[w.layer]
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate pause
++ I ThisWindow IfThumbnail WindowStyle NeverFocus, Icon 
++ I ThisWindow SetLayer $[infostore.iconiclayer]
++ I ThisWindow UnsetStates 30 31
++ I ThisWindow Iconify True
++ I Schedule $[infostore.iconify_delay2] SendToModule FvwmAnimate reset
++ I Next (State 31,!State 30) Schedule $[infostore.iconify_delay3] IconifyAll2
++ I None (State 31,!State 30) Next (State 30) Schedule $[infostore.iconify_delay3] IconifyAll2
+
+##  ^^^  I think that last line needs longer delay
+
+####  ICONIFY EXCEPT
+
+DestroyFunc IconifyExcept
+AddToFunc   IconifyExcept
++ I All UnsetStates 31
++ I All (!Focused,!Iconic,CurrentDesk,Iconifiable,!State $[infostore.state_windowlistskip]) SetStates 31
++ I All (State 31) IfNotThumbnail UnsetStates 31
+#+ I All (State 31) InfoStoreAdd layer_$[w.id] $[w.layer]
++ I SendToModule FvwmAnimate reset
++ I Next (State 31,!Iconic,!Focused) Schedule $[infostore.iconify_delay1] IconifyExcept2
+
+DestroyFunc IconifyExcept2
+AddToFunc   IconifyExcept2
++ I ThisWindow InfoStoreAdd layer_$[w.id] $[w.layer]
++ I ThisWindow DebugEcho IconifyExcept2 : Layer stored : $[infostore.layer_$[w.id]] , $[w.layer]
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate pause
++ I ThisWindow IfThumbnail WindowStyle NeverFocus, Icon 
++ I ThisWindow SetLayer $[infostore.iconiclayer]
++ I ThisWindow UnsetStates 31
++ I ThisWindow Iconify True
++ I Schedule $[infostore.iconify_delay2] SendToModule FvwmAnimate reset
++ I Next (State 31,!Iconic) Schedule $[infostore.iconify_delay3] IconifyExcept2
++ I None (State 31,!Iconic) All UnsetStates 31
+
+
+####  DEICONIFY ALL WINDOWS
+
+DestroyFunc DeIconifyAll
+AddToFunc   DeIconifyAll
++ I All UnsetStates 31
++ I ThisWindow (Iconic,CurrentDesk) SetStates 31
++ I All (Iconic,CurrentDesk) WindowStyle ClickToFocus
++ I SendToModule FvwmAnimate reset
++ I Next (Iconic,CurrentDesk,!State 31) Schedule $[infostore.iconify_delay1] DeIconifyAll2
+
+DestroyFunc DeIconifyAll2
+AddToFunc   DeIconifyAll2
++ I ThisWindow (!CurrentDesk) SendToModule FvwmAnimate pause
++ I ThisWindow DebugEcho DeIconifyAll2 : SetLayer $[infostore.layer_$[w.id]]
++ I ThisWindow SetLayer $[infostore.layer_$[w.id]]
++ I ThisWindow Iconify False
++ I ThisWindow UnsetStates 31
++ I Schedule $[infostore.iconify_delay2] SendToModule FvwmAnimate reset
++ I Next (Iconic,CurrentDesk,!State 31) Schedule $[infostore.iconify_delay3] DeIconifyAll2
++ I Any  (Iconic,CurrentDesk,!State 31) Break 1
++ I Next (Iconic,CurrentDesk, State 31) Schedule $[infostore.iconify_delay3] DeIconifyAll2
++ I None (Iconic,CurrentDesk) All UnsetStates 31
+
+

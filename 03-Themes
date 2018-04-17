@@ -1,0 +1,46 @@
+## vim: syntax=fvwm
+
+##  ╺┳╸╻ ╻┏━╸┏┳┓┏━╸┏━┓
+##   ┃ ┣━┫┣╸ ┃┃┃┣╸ ┗━┓
+##   ╹ ╹ ╹┗━╸╹ ╹┗━╸┗━┛
+##
+##  A theme provides just one wallpaper, and a subconfig to load at startup.
+##  The subconfig may contain almost anything, altho it should define decors,
+##  fonts, colorsets and such.
+
+ReadFile $[FVWM_USERDIR]/.settings
+
+InfoSetDefault theme $[infostore.theme_default]
+InfoStoreAdd theme_dir $./themes/$[infostore.theme]
+DebugEcho theme_dir : $[infostore.theme_dir]
+
+ReadFile $[infostore.theme_dir]/config
+
+DestroyMenu ThemeMenu
+AddToMenu   ThemeMenu DynamicPopupAction MakeThemeMenu
+
+DestroyFunc MakeThemeMenu
+AddToFunc   MakeThemeMenu
++ I DestroyMenu recreate ThemeMenu
++ I Test ( EnvMatch infostore.theme dark) AddToMenu ThemeMenu \
+        "$[infostore.icon_wm_tick]&Dark" Nop
++ I Test (!EnvMatch infostore.theme dark) AddToMenu ThemeMenu \
+        "$[infostore.icon_wm_null]&Dark" ChangeTheme dark
++ I Test ( EnvMatch infostore.theme teal) AddToMenu ThemeMenu \
+        "$[infostore.icon_wm_tick]&Teal" Nop
++ I Test (!EnvMatch infostore.theme teal) AddToMenu ThemeMenu \
+        "$[infostore.icon_wm_null]&Teal" ChangeTheme teal
+
+DestroyFunc ChangeTheme
+AddToFunc   ChangeTheme
++ I InfoStoreAdd wallpaper ::
++ I Test (R $./themes/$[0]/wallpaper.jpg) InfoStoreAdd wallpaper $./themes/$[0]/wallpaper.jpg
++ I Test (R $./themes/$[0]/wallpaper.png) InfoStoreAdd wallpaper $./themes/$[0]/wallpaper.png
++ I Test (EnvMatch infostore.wallpaper ::) DebugEcho Theme $[0] not found...
++ I Test (EnvMatch infostore.wallpaper ::) Break 1
++ I Module FvwmWallpaper --all --image $[infostore.wallpaper]
++ I InfoStoreAdd theme $[0]
++ I SaveSettings
++ I FF-Message 10 ChangeTheme: Please restart now...
+
+

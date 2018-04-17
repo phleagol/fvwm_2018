@@ -1,0 +1,168 @@
+#!/usr/bin/perl
+
+# ~/projects/temp-timer-figlet/test6.pl
+#
+#  urxvt -g 27x5 -e 
+#  
+#  alarm: ./test6.pl -a 30
+#  timer: ./test6.pl -t
+#  clock: ./test6.pl 
+
+#  Install dependencies:-
+#  
+#  aptitude install toilet-fonts figlet libterm-size-perl 
+#  aptitude install libscalar-util-numeric-perl libterm-extendedcolor-perl
+#  cpanm Text::FIGlet
+
+use strictures ;
+use warnings ;
+use v5.22 ;
+$|++ ;
+
+use Time::Piece ;
+use Getopt::Std ;
+use Text::FIGlet ;
+use Term::Size 'chars' ;
+use Encode qw( encode ) ;
+use Scalar::Util::Numeric qw( isint ) ;
+use Term::ExtendedColor ':attributes' ;
+#use Data::Dump qw( dump ) ;
+
+my $font = Text::FIGlet->new(
+    -d => "/usr/share/figlet",
+    -f => "future.tlf",
+) ;
+
+##  $color_count sets how often the colors shift left.
+my $color_count = 5 ;
+my $color_shift = 2 ;
+
+#my @colors = qw(
+#    grey42 grey50 grey50 grey50 grey62 grey62 grey62 grey50 grey50 grey50
+#    grey42 grey42 grey30 grey30 grey19 grey19 grey19 grey30 grey30 grey42 
+#    ) ;
+
+my @colors = qw(
+    grey42 grey50 grey50 grey50 grey62 grey62 grey62 grey50 grey50 grey50
+    grey42 grey42 grey30 grey30 grey19 grey19 grey19 grey30 grey30 grey42 
+    ) ;
+
+
+##  Parse cmdline options.
+my %opt ;
+my ($tfinish, $tstart, $mode) ;
+getopts("hta:", \%opt) or usage() ;
+usage() if $opt{h} ;
+usage() if $opt{a} and $opt{t} ;
+
+if (defined $opt{a})  {
+    usage() unless isint $opt{a} and $opt{a} > 0 ;
+    $mode = "alarm" ;
+    $tfinish = localtime->epoch + 60 * int $opt{a} ;
+} elsif (defined $opt{t})  {
+    $mode = "timer" ;
+    $tstart = localtime->epoch ;
+} else {
+    $mode = "clock" ;
+} ;
+
+##  Prepare terminal.
+system("tput civis") ;                           #  hide cursor
+my $tput_origin = readpipe("tput cup 0 0") ;     #  move cursor to 0,0
+Term::ExtendedColor::autoreset( 0 );
+clear ;
+
+##  More helper vars.
+my $loop_cnt = 0 ;
+my ($termwidth, $termheight, $clockwidth, $clockheight, $fmt) ;
+my @padding_before ; my @padding_after ;
+
+while (1) {
+
+    my @output ;
+    my ($msg, $seconds, $t) ;
+
+    if ($mode eq "alarm")  {
+        $seconds = $tfinish - localtime->epoch ;
+        $t  = Time::Piece->strptime($seconds, '%s') ;
+    } elsif ($mode eq "timer")  {
+        $seconds = localtime->epoch - $tstart ;
+        $t  = Time::Piece->strptime($seconds, '%s') ;
+    } else {
+        $t = localtime ;
+    } ;
+
+    ##  Get figlet text for clock.
+    $msg = sprintf "%02d:%02d:%02d\n", $t->hour, $t->min, $t->sec ;
+    my @clock = $font->figify(-A => $msg) ;
+
+    ##  This runs only on the first loop.
+    unless ($loop_cnt++)  {
+
+        ##  Sanity check for small terminals.
+        ($termwidth, $termheight) = chars ;
+        $clockwidth = length $clock[0] ;
+        $clockheight = @clock ;
+        die "term too small" if $termwidth < $clockwidth or $termheight < $clockheight ;
+
+        ##  Set format $fmt used to pad printf the @clock.
+        my $baz = $termwidth - $clockwidth ;
+        my $foo = int($baz/2) ;
+        my $bar = $baz - $foo ;
+        $fmt = "%${foo}s%${clockwidth}s%${bar}s" ;
+
+        ##  Set vertical padding.
+        $baz = $termheight - $clockheight ;
+        $foo = int $baz/2 ;
+        $bar = $baz - $foo ;
+        my $emptyline = sprintf "%${termwidth}s", " " ;
+        @padding_before = $emptyline x $foo ;
+        @padding_after = $emptyline x $bar ;
+    }
+
+    ##  Color, pad and utf-encode the clock.
+    for (my ($row, $col, $coffset) = (0, 0, 0) ;
+         $row <= $#clock ;
+         $row++, $col = 0, $coffset += $color_shift )  {
+
+        ##  Each char colored one at a time.
+        my $chars ;
+        my @paint = circ_shift($coffset, @colors) ;
+        foreach ( split //, $clock[$row] ) { $chars .= fg($paint[$col++], $_) }
+
+        ##  Encode clock with padding.
+        $chars = sprintf $fmt, "", $chars, "" ;
+        $chars .= "\n" unless $row == $#clock ;
+        $output[$row] = encode('UTF-8', $chars) ;
+    } ;
+
+    ##  Add vertical padding.
+    unshift @output, @padding_before ;
+    push @output, @padding_after ;
+
+    ##  Print out clock text.
+    print $tput_origin ;
+    foreach (@output) { print } ;             
+
+    ##  Left rotate colors every 5secs.
+    @colors = circ_shift(1, @colors) if $loop_cnt%$color_count == 0 ;
+
+    exit if $mode eq "alarm" and $seconds < 0 ;
+    sleep 1 ;
+}
+
+sub circ_shift {
+    my $n = shift ; 
+    my @list = @_ ;
+    push @list, splice @list, 0, $n;
+    return @list ;
+}
+
+sub usage {
+    say STDERR " usage: $0 [-ht] [-a minutes] " ;
+    say STDERR "" ;
+    say STDERR " example: $0 -a 30 " ;
+    exit ;
+}
+
+

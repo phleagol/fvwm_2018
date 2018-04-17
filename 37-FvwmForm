@@ -1,0 +1,104 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓┏━╸┏━┓┏━┓┏┳┓
+##  ┣╸ ┃┏┛┃╻┃┃┃┃┣╸ ┃ ┃┣┳┛┃┃┃
+##  ╹  ┗┛ ┗┻┛╹ ╹╹  ┗━┛╹┗╸╹ ╹
+
+DestroyModuleConfig FvwmFormDefault: *
+*FvwmFormDefault: Font                  $[infostore.font_small_bold]
+*FvwmFormDefault: InputFont             $[infostore.font_small_bold]
+*FvwmFormDefault: ButtonFont            $[infostore.font_small_bold]
+*FvwmFormDefault: TimeoutFont           $[infostore.font_small_bold]
+*FvwmFormDefault: Fore                  gray60
+*FvwmFormDefault: Back                  gray9
+*FvwmFormDefault: Colorset              -1
+*FvwmFormDefault: ItemFore              gray60
+*FvwmFormDefault: ItemBack              gray9
+*FvwmFormDefault: ItemColorset          -1
+*FvwmFormDefault: ButtonPointer         hand2
+*FvwmFormDefault: ButtonInPointer       hand2
+*FvwmFormDefault: InputPointer          xterm
+*FvwmFormDefault: ActivateOnPress       on
+*FvwmFormDefault: ButtonPointerFore     white
+*FvwmFormDefault: ButtonPointerBack     black
+*FvwmFormDefault: ButtonInPointerFore   black
+*FvwmFormDefault: ButtonInPointerBack   white
+*FvwmFormDefault: InputPointerFore      white
+*FvwmFormDefault: InputPointerBack      black
+
+
+####  FVWMFORM FUNCTIONS
+
+##  #  ##  THIS IS ONLY USED BY SCROT FUNCTIONS
+##  DestroyFunc FF-Notify
+##  AddToFunc   FF-Notify
+##  + I FF-Message $[0] $[2-]
+##  + I Schedule $[0]000 $[1]
+
+
+DestroyFunc FF-Confirm
+AddToFunc FF-Confirm
++ I DestroyModuleConfig FF-Confirm: *
++ I *FF-Confirm: Font $[infostore.font_small_bold]
++ I *FF-Confirm: ButtonFont $[infostore.font_small_bold]
++ I *FF-Confirm: Title "$[0]"
++ I *FF-Confirm: PadVText $[infostore.message_padvtxt]
++ I *FF-Confirm: PadVText $[infostore.message_padvtxt]
++ I *FF-Confirm: Text "   "
++ I *FF-Confirm: Button quit " Yes " ^Y
++ I *FF-Confirm: Command $[1-]
++ I *FF-Confirm: Text "  "
++ I *FF-Confirm: Button quit " No " ^N
++ I *FF-Confirm: Text "   "
++ I KillModule FvwmForm FF-Confirm 
++ I Module FvwmForm FF-Confirm 
+
+DestroyFunc FF-Okay
+AddToFunc FF-Okay
++ I DestroyModuleConfig FF-Okay: *
++ I *FF-Okay: Font terminus-bold-16
++ I *FF-Okay: ButtonFont terminus-bold-16
++ I *FF-Okay: Title "$[0]"
++ I *FF-Okay: Text "        "
++ I *FF-Okay: Button quit " Ok " ^Y
++ I *FF-Okay: Text "        "
++ I KillModule FvwmForm FF-Okay 
++ I Module FvwmForm FF-Okay 
+
+#  DestroyFunc FF-Notify
+#  AddToFunc   FF-Notify 
+#  + I DestroyModuleConfig FF-Notify: *
+#  + I *FF-Notify: Geometry -+20++20
+#  + I *FF-Notify: Font $[infostore.terminus16bold]
+#  + I *FF-Notify: Timeout $0 $1 ""
+#  + I *FF-Notify: Text "$[2-]  "
+#  + I KillModule FvwmForm FF-Notify
+#  + I KillModule FvwmForm FF-Message
+#  + I KillModule FvwmForm FF-NotFound
+#  + I Module FvwmForm FF-Notify
+
+#+ I *FF-Notify: Timeout $[0] Nop ""
+#  DestroyFunc FF-Notify
+#  AddToFunc FF-Notify 
+#  + I DestroyModuleConfig FF-Notify: *
+#  + I *FF-Notify: Geometry -+20++20
+#  + I *FF-Notify: Font $[infostore.terminus16bold]
+#  + I PipeRead ' \
+#    start=0 ; for msg in $* ; do \
+#      if [ "$start" -gt "1" ] ; then \
+#         echo "*FF-Notify: Line center" ; \
+#         echo "*FF-Notify: Text \\"$msg\\"" ; \
+#      fi; \
+#    start=$(($start+1)) ; done ; '
+#  + I *FF-Notify: Timeout $0 $1 ""
+#  + I KillModule FvwmForm FF-Notify
+#  + I KillModule FvwmForm FF-Message
+#  + I KillModule FvwmForm FF-NotFound
+#  + I Module FvwmForm FF-Notify
+
+
+
+
+
+
+

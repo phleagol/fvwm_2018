@@ -1,0 +1,93 @@
+-- vim: syntax=lua:
+
+--  Square Sans Serif 7:style=Regular
+--  http://www.1001fonts.com/digital+clock-fonts.html 
+--  https://superuser.com/questions/178179/modify-conky-to-handle-variable-length-values
+
+-- desktop indicators
+
+--    font = 'DejaVu Sans Mono:size=12',
+--    font = 'Inconsolata:style=Medium:size=12',
+--  font = 'DejaVu Sans Mono:style=Bold:size=10',
+
+--    minimum_width = 1355,
+
+--    minimum_height = 40,
+
+--    alignment = 'tl', necassary for fvwmbuttons
+
+conky.config = {
+    alignment = 'tl',
+    background = false,
+    border_width = 1,
+    cpu_avg_samples = 2,
+    net_avg_samples = 2,
+    diskio_avg_samples = 2,
+    default_color = 'white',
+    default_outline_color = 'white',
+    default_shade_color = 'white',
+    double_buffer = true,
+    draw_borders = false,
+    draw_graph_borders = false,
+    draw_outline = false,
+    draw_shades = false,
+    use_xft = true,
+    font = 'DejaVu Sans Mono:style=Bold:size=10',
+    gap_x = 5,
+    gap_y = 5,
+    minimum_width = 1205,
+    net_avg_samples = 2,
+    no_buffers = true,
+    out_to_console = false,
+    out_to_stderr = true,
+    extra_newline = false,
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_type = 'normal',
+    own_window_colour = 'gray5',
+    own_window_title = "barconky",
+    stippled_borders = 0,
+    update_interval = 1.0,
+    uppercase = false,
+    use_spacer = 'left',
+    pad_percents = 3,
+    show_graph_scale = false,
+    lua_load = 'drawlines.lua',
+    lua_draw_hook_pre = 'main',
+    color0 = 'gray40',
+    color1 = 'gray70',
+    color2 = 'gray60',
+}
+
+conky.text = [[
+${goto 15}\
+${if_match ${desktop}==2}${color1}1${else}${color0}1${endif}  \
+${if_match ${desktop}==3}${color1}2${else}${color0}2${endif}  \
+${if_match ${desktop}==4}${color1}3${else}${color0}3${endif}  \
+${if_match ${desktop}==5}${color1}4${else}${color0}4${endif}  \
+${color2}\
+${goto  120}VOL: ${exec printf '%3d' `$FVWM_BIN/volume.sh`}%\
+${goto 1115}MEM: ${memperc}%\
+\
+${image ci_cpu.png       -p 210,5}\
+${image ci_readwrite.png -p 440,8}\
+${image ci_up.png        -p 663,8}\
+${image ci_down.png      -p 886,8}\
+\
+${goto 256}${cpugraph cpu0 25,164}\
+${goto 484}${diskiograph /dev/sda 25,164 16000}\
+${goto 707}${upspeedgraph   eth0 25,164 3000}\
+${goto 930}${downspeedgraph eth0 25,165 3000}\
+
+${goto 15}${voffset -25}\
+${if_match ${desktop}==6}${color1}5${else}${color0}5${endif}  \
+${if_match ${desktop}==7}${color1}6${else}${color0}6${endif}  \
+${if_match ${desktop}==8}${color1}7${else}${color0}7${endif}  \
+${if_match ${desktop}==9}${color1}8${else}${color0}8${endif}  \
+${color2}\
+${goto  120}BRI:${execi 6  printf '%4d' `$FVWM_BIN/bright.sh`}%\
+${goto 1115}APT:${execi 10 printf '%4d' `cat ~/.apt_update`  }+\
+]]
+
+
+

@@ -1,0 +1,27 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓┏━┓┏┓╻╻┏┳┓┏━┓╺┳╸┏━╸
+##  ┣╸ ┃┏┛┃╻┃┃┃┃┣━┫┃┗┫┃┃┃┃┣━┫ ┃ ┣╸ 
+##  ╹  ┗┛ ┗┻┛╹ ╹╹ ╹╹ ╹╹╹ ╹╹ ╹ ╹ ┗━╸
+
+DestroyModuleConfig FvwmAnimate: *
+#*FvwmAnimate: Effect Zoom3D
+*FvwmAnimate: Effect Frame
+*FvwmAnimate: Iterations 100
+*FvwmAnimate: Width 5
+*FvwmAnimate: Twist 1
+#*FvwmAnimate: Twist 0.500000
+*FvwmAnimate: Delay 4
+*FvwmAnimate: Color gray50
+
+##  Total delay (mS) == Delay * Iterations = 450 mS
+
+DestroyFunc CheckRestartFvwmAnimate
+AddToFunc   CheckRestartFvwmAnimate
++ I UnsetEnv NOPROCESS
++ I -PipeRead ' j="$(pgrep -fc \'/fvw[m]/.*/FvwmAnimate\')" ; \
+        [ $j -eq 0 ] && echo "SetEnv NOPROCESS 1" ; '
++ I Test (EnvIsSet NOPROCESS) DebugEcho Restarting FvwmAnimate module...
++ I Test (EnvIsSet NOPROCESS) Module FvwmAnimate
++ I UnsetEnv NOPROCESS
+

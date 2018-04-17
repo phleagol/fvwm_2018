@@ -1,0 +1,22 @@
+## vim: syntax=fvwm
+
+##  ┏┳┓┏━╸┏┓╻╻ ╻   ╻┏ ┏━╸╻ ╻┏┓ ╻┏┓╻╺┳┓╻┏┓╻┏━╸┏━┓
+##  ┃┃┃┣╸ ┃┗┫┃ ┃   ┣┻┓┣╸ ┗┳┛┣┻┓┃┃┗┫ ┃┃┃┃┗┫┃╺┓┗━┓
+##  ╹ ╹┗━╸╹ ╹┗━┛   ╹ ╹┗━╸ ╹ ┗━┛╹╹ ╹╺┻┛╹╹ ╹┗━┛┗━┛
+
+##  Enhanced bindings to navigate menus.
+Key Up        M A -
+Key Down      M A -
+Key Up        M M MenuMoveCursor -1
+Key Down      M M MenuMoveCursor +1
+Key Page_Up   M A MenuMoveCursor -5 
+Key Page_Down M A MenuMoveCursor  5
+Key Home      M A MenuMoveCursor  0  0
+Key End       M A MenuMoveCursor  0 -1
+-PipeRead ' \
+    for j in `seq 0 9` ; \
+      do k=$(( (j+1)%10 )) ; \
+      echo "Key $k M A MenuMoveCursor 0 $j" ; \
+    done'
+
+

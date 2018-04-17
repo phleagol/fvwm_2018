@@ -1,0 +1,108 @@
+DestroyMenu "XDGMenu"
+AddToMenu "XDGMenu" "XDGMenu" Title
++ "Accessories%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Accessories"
++ "Development%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Development"
++ "Games%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Games"
++ "Graphics%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Graphics"
++ "Internet%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Internet"
++ "Multimedia%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Multimedia"
++ "System%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "System"
++ "Universal Access%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "Universal Access"
+# not supported: <xdg.Menu.Separator instance at 0x7f05813897e8>
++ "DesktopSettings%/usr/share/icons/gnome/16x16/places/gnome-fs-directory.png%" Popup "DesktopSettings"
++ "" Nop
++ "$[gt.Regenerate]%/usr/local/share/icons/FVWM_Xdg/16x16/categories/system-software-update.png%" PipeRead `fvwm-menu-desktop`
++ "$[gt.Configure]%/usr/local/share/icons/FVWM_Xdg/16x16/categories/system-software-update.png%" Module FvwmPerl -l fvwm-menu-desktop-config.fpl
+
+DestroyMenu "Accessories"
+AddToMenu "Accessories" "Accessories" Title
++ "Character Map%/usr/share/icons/gnome/16x16/apps/accessories-character-map.png%" Exec exec  gucharmap
++ "Fonts%/usr/share/icons/gnome/16x16/apps/preferences-desktop-font.png%" Exec exec  gnome-font-viewer 
++ "GVim%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gvim.png%" Exec exec  gvim -f 
++ "Graphical Disk Map%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gdmap_icon.png%" Exec exec  gdmap
++ "Leafpad%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-leafpad.png%" Exec exec  leafpad 
++ "Rxvt Color Unicode Terminal%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-urxvt_48x48.png%" Exec exec  urxvt
++ "Stopwatch%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-stopwatch.png%" Exec exec  /usr/bin/stopwatch
++ "Vim%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gvim.png%" Exec exec  vim 
++ "compton%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-compton.png%" Exec exec  compton
+
+DestroyMenu "Development"
+AddToMenu "Development" "Development" Title
++ "Icon Browser%/usr/share/icons/hicolor/16x16/apps/yad.png%" Exec exec  yad-icon-browser
+
+DestroyMenu "Games"
+AddToMenu "Games" "Games" Title
++ "Emilia Pinball%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-pinball.png%" Exec exec  pinball
++ "Galaga%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-xgalaga-icon.png%" Exec exec  xgalaga
++ "Galaga:Hyperspace%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-xgalaga-icon.png%" Exec exec  xgalaga-hyperspace
++ "LinuxBBQ Games%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e bbqgames
++ "Penguin Canfield%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-canfield
++ "Penguin Freecell%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-freecell
++ "Penguin Golf%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-golf
++ "Penguin Mastermind%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-mastermind
++ "Penguin Merlin%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-merlin
++ "Penguin Minesweeper%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-minesweeper
++ "Penguin Pegged%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-pegged
++ "Penguin Solitaire%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-solitaire
++ "Penguin Spider%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-spider
++ "Penguin Taipei%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-taipei
++ "Penguin Taipei-Editor%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-taipedit
++ "Penguin Thornq%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-ace.png%" Exec exec  ace-thornq
+
+DestroyMenu "Graphics"
+AddToMenu "Graphics" "Graphics" Title
++ "GNU Paint%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gpaint.png%" Exec exec  gpaint
++ "Gcolor2%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gcolor2.png%" Exec exec  gcolor2
++ "ImageMagick (color depth=q16)%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-display-im6.q16.png%" Exec exec  /usr/bin/display-im6.q16 -nostdin 
++ "Inkscape%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-inkscape.png%" Exec exec  inkscape 
++ "Mirage%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-mirage.png%" Exec exec  mirage 
++ "Take screenshot%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  bbqscrot
++ "Viewnior%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-viewnior.png%" Exec exec  viewnior 
++ "mtPaint graphic editor%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-mtpaint.png%" Exec exec  mtpaint 
+
+DestroyMenu "Internet"
+AddToMenu "Internet" "Internet" Title
++ "Chromium Web Browser%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-chromium.png%" Exec exec  /usr/bin/chromium 
++ "Dillo%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-dillo.png%" Exec exec  dillo 
++ "Firefox ESR%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-firefox-esr.png%" Exec exec  /usr/lib/firefox-esr/firefox-esr 
++ "HexChat%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-hexchat.png%" Exec exec  hexchat --existing 
++ "Pale Moon%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-palemoon.png%" Exec exec  palemoon 
++ "Thunderbird%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-thunderbird.png%" Exec exec  /usr/bin/thunderbird 
++ "Waterfox%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-waterfox.png%" Exec exec  waterfox 
+
+DestroyMenu "Multimedia"
+AddToMenu "Multimedia" "Multimedia" Title
++ "Gnome Music Player Client%/usr/share/icons/hicolor/16x16/apps/gmpc.png%" Exec exec  gmpc
++ "LinuxBBQ Radio%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e bbqradio
++ "Music on Console%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e "mocp -T transparent-background"
++ "Ncmpcpp%/usr/share/icons/gnome/16x16/categories/gnome-applications.png%" Exec exec  ncmpcpp
++ "Raffles Stream Player%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e raffles
++ "Sonata%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-sonata.png%" Exec exec  sonata
++ "mpv Media Player%/usr/share/icons/hicolor/16x16/apps/mpv.png%" Exec exec  mpv --player-operation-mode=pseudo-gui -- 
+
+DestroyMenu "System"
+AddToMenu "System" "System" Title
++ "BleachBit%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bleachbit.png%" Exec exec  bleachbit
++ "BleachBit (as root)%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bleachbit.png%" Exec exec  su-to-root -X -c bleachbit
++ "Copy ISO to USB%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  bbqusb
++ "Create System Snapshot%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e "sudo bbqsnapshot"
++ "GParted%/usr/share/icons/hicolor/16x16/apps/gparted.png%" Exec exec  /usr/bin/gparted 
++ "Htop%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-htop.png%" Exec exec  htop
++ "Install LinuxBBQ%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e "sudo bbqinstaller"
++ "Install additional software%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-bbqtux2.png%" Exec exec  x-terminal-emulator -e roastyourown
++ "LilyTerm%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-lilyterm.png%" Exec exec  lilyterm
++ "Reportbug%/usr/share/icons/gnome/16x16/places/debian-swirl.png%" Exec exec  reportbug --exit-prompt --ui gtk2
++ "UXTerm%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-xterm-color.png%" Exec exec  uxterm
++ "XTerm%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-xterm-color.png%" Exec exec  xterm
++ "gmrun%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-gmrun.png%" Exec exec  gmrun
++ "ranger%/usr/local/share/icons/FVWM_Xdg/16x16/categories/utilities-terminal.png%" Exec exec  ranger
+
+DestroyMenu "Universal Access"
+AddToMenu "Universal Access" "Universal Access" Title
++ "Screen Magnifier%/usr/share/icons/gnome/16x16/actions/system-search.png%" Exec exec  xzoom -mag 3 -geometry 320x240
+
+DestroyMenu "DesktopSettings"
+AddToMenu "DesktopSettings" "DesktopSettings" Title
++ "Adobe Flash Player%/home/phleagol/.fvwm-custom/images/xdgmenu/16x16-flash-player-properties.png%" Exec exec  flash-player-properties
++ "Customize Look and Feel%/usr/share/icons/gnome/16x16/apps/preferences-desktop-theme.png%" Exec exec  lxappearance
+

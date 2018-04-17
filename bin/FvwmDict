@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+use strict ;
+use warnings ;
+use v5.24 ;
+
+use lib `fvwm-perllib dir` ;
+use FVWM::Module ;
+use Net::Dict ;
+use Path::Tiny ;
+use IPC::Run qw( run timeout ) ;
+
+my $module = new FVWM::Module(
+    Name => 'Dict',
+    Debug => 0,
+);
+
+say STDERR "Dict: " . $ARGV[0] . ">" ;
+
+##  Fetch word definition.
+my $dict = Net::Dict->new('dict.org') ;
+$dict->setDicts('wn') ; 
+my $eref = $dict->define($ARGV[0]) ;
+
+##  Exit if word not found.
+if (not defined $eref->[0]->[1]) {
+    $module->send("FF-Message 4 Dict: Word not found." ) ;
+    sleep 1 ;
+    exit ;
+}
+
+##  Store definition to temp file.
+my $temp = Path::Tiny->tempfile() ;
+$temp->append($eref->[0]->[1]) ;
+$temp->append("\n\n") ;
+my $linecount = $temp->lines ;
+
+my ($w, $hmax) = (70, 26 ) ;
+
+my @cmd ;
+@cmd = qw( urxvt -n Dictionary -T Dictionary -fn tamsyn20bold -fb tamsyn20bold ) ;
+push @cmd, ("-g", "${w}x$hmax" )      if $linecount > $hmax ;
+push @cmd, ("-g", "${w}x$linecount" ) if $linecount <= $hmax ;
+push @cmd, qw( -b 10 -e less -RS ) ;
+push @cmd, $temp->stringify ;
+
+my ($err, $out, $in) ;
+run \@cmd, \$in, \$out, \$err, timeout( 10000 ) or die "cat: $?" ;
+$temp->remove ;
+
+
+
+
+
+
+

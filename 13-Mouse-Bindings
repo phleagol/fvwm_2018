@@ -1,0 +1,62 @@
+## vim: syntax=fvwm
+
+##  ┏┳┓┏━┓╻ ╻┏━┓┏━╸   ┏┓ ╻┏┓╻╺┳┓╻┏┓╻┏━╸┏━┓
+##  ┃┃┃┃ ┃┃ ┃┗━┓┣╸    ┣┻┓┃┃┗┫ ┃┃┃┃┗┫┃╺┓┗━┓
+##  ╹ ╹┗━┛┗━┛┗━┛┗━╸   ┗━┛╹╹ ╹╺┻┛╹╹ ╹┗━┛┗━┛
+
+##  Action                        |   Mod + Mouse-click               in Window Context
+##  ==============================+==============================================================
+##  Switch to next/prev desktop   |         Mouse roller              in Root window                
+##  Drag-move window              |   Alt + Drag-left-click           inside window            
+##  Drag-move window              |         Drag-left-click           in Titlebar                  
+##  De-Iconify window.            |         Double-left-click         in Thumbnail Icon                
+##  Open MainMenu                 |         Double-left/right-click   in Root window               
+##  Open MainMenu                 |         Hold-left/right-click     in Root window               
+##  Open WindowMenu               |         Left-click                in Miniicon in titlebar      
+##  Open WindowMenu               |         Right-click               in Titlebar,frames,thumbnail 
+##  Open WindowMenu               |   Alt + Right-click               inside window             
+
+##  Switch to next/prev desktop
+Mouse 4 R A GotoDesk -1 $[infostore.desk_min] $[infostore.desk_max] 
+Mouse 5 R A GotoDesk  1 $[infostore.desk_min] $[infostore.desk_max]
+
+##  Drag move window with alt + motion-left-click inside window.
+Mouse 1 W M ClickDragMove 
+DestroyFunc ClickDragMove
+AddToFunc   ClickDragMove
++ M ThisWindow (AcceptsFocus) Move
+
+##  Drag move with motion-left-click inside titlebar. 
+Mouse 1 T N ClickMove
+DestroyFunc ClickMove
+AddToFunc   ClickMove
++ M Move
+
+##  Deiconify with double-left-click inside thumbnail icon.
+Mouse 1 I N ClickDeIconify 
+DestroyFunc ClickDeIconify
+AddToFunc   ClickDeIconify D WindowListFunc
+
+##  Open MainMenu with a left-click or right-click in root window.
+Mouse 1 R A ClickMainMenu
+DestroyFunc ClickMainMenu
+AddToFunc   ClickMainMenu
++ H MainMenu Nop
++ D MainMenu Nop
+
+##  Open WindowMenu with :-
+##      1] Left-click on mini-icon.
+##      2] Right-click on the titlebar, mini-icon, frames, or inside thumbnail icon.
+##      3] Alt + right-click inside of window.
+
+#  Mouse 1    1 A OpenWindowMenu  IN DECOR SUBCONFIG
+Mouse 3 1TFS N OpenWindowMenu
+Mouse 3    W M OpenWindowMenu
+Mouse 3    I A OpenWindowMenu
+
+DestroyFunc OpenWindowMenu
+AddToFunc   OpenWindowMenu
++ C ThisWindow (Iconic) Menu IconicWindowMenu Icon   -0p -0p 
++ C ThisWindow (!Maximized,!Iconic) Menu NormalWindowMenu Window -0p -0p
+
+

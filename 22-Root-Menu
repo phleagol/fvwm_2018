@@ -1,0 +1,37 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+##  
+##  ┏━┓┏━┓┏━┓╺┳╸   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┣┳┛┃ ┃┃ ┃ ┃    ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ╹┗╸┗━┛┗━┛ ╹    ╹ ╹┗━╸╹ ╹┗━┛
+
+##  Does FNS has a different icon for DEICONIFY ??  FIXME
+
+DestroyMenu RootMenu
+AddToMenu   RootMenu "Root Menu" Title
++ "$[infostore.icon_mm_window_cascade]Cascade"  Rearrange -cascade -u -m -incx 4 -incy 4 3 3 
++ "$[infostore.icon_mm_window_tile1]Tile [2]"   Rearrange -tile -u -mn 2 -m 3 3 98 93
++ "$[infostore.icon_mm_window_tile2]Tile [3]"   Rearrange -tile -u -mn 3 -m 3 3 98 93
++ "$[infostore.icon_cb_sxiv_app]&SxivMerge"      Module SxivMerge --folder="$[FVWM_SXIVGET]"
++ "" Nop
++ "$[infostore.icon_wm_window_iconify]&Iconify"      IconifyAll
++ "$[infostore.icon_wm_window_deiconify]&DeIconify"  DeIconifyAll
++ "$[infostore.icon_mm_urxvt]&Console"         OpenConsole
++ "$[infostore.icon_mm_identify]Identif&y"     PleaseSelectThen NoWindow Pick Module FvwmIdent
++ "" Nop
++ "$[infostore.icon_mm_gvim]&Vimxsel"    VipeXsel
++ "$[infostore.icon_mm_gvim]Vim&xsel++"  VipeXselPlus
++ "" Nop
++ "$[infostore.icon_mm_alarm]Time&r	>"      Popup TimerMenu
++ "$[infostore.icon_mm_urxvt]Urxv&t	>"      Popup TermMenu
++ "$[infostore.icon_mm_scrot]&Maim	>"       Popup MaimMenu
++ "" Nop
++ "$[infostore.icon_wm_application_exit]Close" NoWindow CloseWindow
+#+ "$[infostore.icon_wm_application_exit]Close" PleaseSelectThen NoWindow Pick Close
+
+DestroyFunc Rearrange
+AddToFunc   Rearrange
++ I Exec pkill -f 'usr[/].*FvwmRearrange'
++ I Schedule 200 FvwmRearrange $[*]
+
+
+

@@ -1,0 +1,212 @@
+#!/usr/bin/perl
+
+##  KillModule FvwmMusic
+##  Module FvwmMusic strings-yt1.m3u
+
+##  fvwm-perllib man FVWM::Tracker::ModuleConfig
+
+##  Change playlist then open musicmenu : fail.
+
+#  Use of uninitialized value $mpv_index in concatenation (.) or string at /home/phleagol/.fvwm-custom/bin/FvwmMusic line 58.
+#  $mpv_status : play
+
+# garbage after JSON object, at character offset 41 (before "{ "command": ["get_p...") at /home/phleagol/.fvwm-custom/bin/FvwmMusic line 200.
+
+use v5.26 ;
+use strictures ;
+use warnings ;
+
+use lib `fvwm-perllib dir`;
+use FVWM::Module ;
+use Time::Piece ;
+use JSON::MaybeXS ;
+use Proc::ProcessTable ;
+use Path::Tiny qw( path tempfile ) ;
+use Data::Dump qw( dump ) ;
+#  strings-yt1.m3u
+
+##  Store the cmdline arg.
+my $m3u = $ARGV[5] ;
+
+##  Establish connection to fvwm.
+my $modname = "FvwmMusic" ;
+my $module  = new FVWM::Module( Name  => $modname ) ;
+my $config  = $module->track("ModuleConfig")->data ;
+
+##  Menu icons.
+my $icon_play   = '$[infostore.icon_mm_play]'  ;
+my $icon_pause  = '$[infostore.icon_mm_pause]' ;
+my $icon_null   = '$[infostore.icon_mm_null]'  ;
+my $icon_edit   = '$[infostore.icon_rm_edit]'  ;
+my $icon_stop   = '$[infostore.icon_rm_exit]'  ;
+my $icon_music  = '$[infostore.icon_mm_radio]' ;
+
+##  Menu names.
+my $menu_name    = $config->{MenuName} ;
+my $submenu_name = $config->{SubMenuName} ;
+
+##  Folder and current playlist
+my $head ;
+my $folder = path($config->{Folder}) ;
+my $playlist = $folder->child($m3u) ;
+if ($playlist->is_file) {
+    ($head) = $playlist->lines({ chomp => 1, count => 1 }) ;
+    die "Malformed m3u playlist : $!" unless $head =~ /^#EXTM3U/ ;
+} else {
+    $playlist = tempfile ;
+    $head = "noplaylist" ;
+}
+#die "M3u playlist not found : $!" unless $playlist->is_file ;
+
+##  Current mpv status
+my $mpv_status = mpv_status() ;
+my $mpv_index  = $mpv_status =~ /play|pause/ ? mpv_playlist_pos() : -1 ;
+$mpv_index = -1 unless defined $mpv_index ;
+
+say STDERR '$mpv_status : ' . $mpv_status ;
+say STDERR '$mpv_index  : ' . $mpv_index  ;
+
+##  CALC WIDTHS USED TO FORMAT MENU LABELS
+
+my $time_max = my $title_width = 0 ;
+foreach my $line ($playlist->lines({ chomp => 1 })) {
+    if ($line =~ /^#EXTINF:(\d+),(.+)/) {
+        $time_max = $1 if $1 > $time_max ;
+        $title_width = length($2) if length($2) > $title_width ;
+    } elsif ($line =~ /^#EXTLABEL:(.+)/) {
+        $title_width = length($1) if length($1) > $title_width ;
+    }
+}
+my $foo = Time::Piece->strptime($time_max, '%s') ;
+my $hms = $time_max >= 3600 ? $foo->hms : sprintf '%s:%02s', $foo->min, $foo->sec ;
+my $time_width = $time_max ? length($hms) + 2 : 0 ;
+my $combined_width = $time_width + $title_width ;
+
+
+##  BUILD MAIN MENU
+
+my @menu = () ;
+my ($menu_title, $homepage, $title) ;
+my ($idx, $time, $web) = (0, "", "") ;
+
+foreach my $line ($playlist->lines({ chomp => 1 })) {
+    if( $line =~ /^#EXTMENUTITLE:(.+)/) {
+        $menu_title = $1 
+    } elsif ($line =~ /^#EXTINF:(\d+),(.+)/) {
+        if ( $1 ) {
+            my $dur = Time::Piece->strptime($1, '%s');
+            $time = $1 >= 3600 ? $dur->hms : sprintf '%s:%02s', $dur->min, $dur->sec if $1 < 3600 ;
+        }
+        $title = $2 ;
+    } elsif ($line =~ /^#EXTLABEL:(.+)/) {
+        $title = $1 ;
+    } elsif ($line =~ /^#EXTWEBSITE:(.+)/) {
+        $web = $1 ;
+    } elsif ($line =~ /^[^#]/) {
+        if (defined $title) {
+            my $foo ;
+            my $icon = $icon_null ;
+            if ($idx == $mpv_index) {
+                $icon = $icon_pause if $mpv_status eq "pause" ;
+                $icon = $icon_play  if $mpv_status eq "play"  ;
+                $homepage = $web if $web ;
+            }
+            $foo = $time_width ? sprintf "%-${title_width}s%${time_width}s", $title, $time
+                               : sprintf "%-${combined_width}s", $title ;
+            my $cmd = "MusicPlay $idx \"$playlist\" \"$title\"" ;
+            push @menu, "\"$icon$foo\" $cmd" ;
+            $idx++ ;
+        }
+        $time = $web = "" ;
+        undef $title ;
+    }
+}
+push @menu, '"" Nop' ;
+
+##  Radio station homepage entry...
+if ($homepage) {
+    my $foo = '"$[infostore.icon_rm_information]&Now Playing" ' ;
+    $foo .= ' Exec sleep 1 && echo "' . $homepage . '" | xsel -ib' ;
+    push @menu, $foo ;
+}
+
+push @menu, "\"${icon_music}&Playlists\t>\" Popup $submenu_name" ;
+# if ($mpv_status =~ /play|pause/) {
+#     push @menu, '"" Nop' ;
+#     push @menu, "\"${icon_stop}&Stop Radio\" MusicStop" if $mpv_status =~ /play|pause/ ;
+# }
+
+substr($_, 0, 0) = "AddToMenu $menu_name " foreach @menu ;
+unshift @menu, "AddToMenu $menu_name \"$menu_title\" Title" if defined $menu_title ; 
+unshift @menu, "DestroyMenu $menu_name" ;
+
+##  BUILD PLAYLIST MENU
+
+my @submenu = () ;
+
+foreach my $file (sort( $folder->children(qr/\.m3u$/) )) {
+    my $entry = "\"${icon_music}" . $file->basename('.m3u') . '" ChangePlaylist ' . $file->basename ;
+    push @submenu, $entry ;
+} ;
+
+push @submenu, '"" Nop' ;
+push @submenu, "\"${icon_edit}&Edit playlists\" MusicEdit" ;
+
+substr($_, 0, 0) = "AddToMenu $submenu_name " foreach @submenu ;
+unshift @submenu, "DestroyMenu $submenu_name" ;
+
+##  DEFINE MENUS, OPEN MENU & EXIT
+
+sendcmd(@submenu) ;
+sendcmd(@menu) ;
+
+if ($head eq "noplaylist") {
+    sendcmd("WindowId root 1 WarpToWindow 50 90p ") ;
+    sendcmd("Menu $submenu_name Root c c-40p ") ;
+} else {
+    sendcmd("WindowId root 1 WarpToWindow 50 90p ") ;
+    sendcmd("Menu $menu_name Root c c-40p ") ;
+}
+
+exit ;
+
+####  SUBROUTINES
+
+sub mpv_status {
+    return "none" unless mpv_pgrep() ;
+    my $status = "play" ;
+    my $json_in = '{ "command": ["get_property", "pause"] }' ;
+    my $json_out = readpipe "echo \'$json_in\' | socat - /tmp/mpvsocket 2>/dev/null" ;
+    $status = "pause" if $json_out =~ /true.*success/ ;
+    $json_in = '{ "command": ["get_property", "idle-active"] }' ;
+    $json_out = readpipe "echo \'$json_in\' | socat - /tmp/mpvsocket 2>/dev/null" ;
+    $status = "stop" if $json_out =~ /true.*success/ ;
+    return $status ;
+}
+
+sub mpv_pgrep {
+    my @pids = () ;
+    my $pt   = Proc::ProcessTable->new() ;
+    my $rgx  = qr/m[p]v\s.*mpvsocket\s.*--idle/ ;
+    foreach (@{ $pt->table }) { push @pids, $_->pid if $_->cmndline =~ $rgx } ;
+    return scalar(@pids) ;
+}
+
+sub mpv_playlist_pos {
+    my $json_in = JSON::MaybeXS->new->encode({ command => [ "get_property", "playlist-pos" ], }) ;
+    my $json_out = readpipe "echo \'$json_in\' | socat - /tmp/mpvsocket 2>/dev/null" ;
+    return unless $json_out ; 
+    my $out = JSON::MaybeXS->new->decode( $json_out ) ;
+    return $out->{data} ;
+}
+
+sub sendcmd {
+    foreach ( @_ ) {
+        #$module->show_message($_) ;
+        $module->send($_) ;
+    }
+}
+
+
+
+

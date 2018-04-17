@@ -1,0 +1,68 @@
+#!/bin/sh
+# Modified from : https://github.com/jschx/ufetch
+# Run like this :-
+#
+#      urxvt -b 5 -g 55x9 -bg gray9 -fn terminus-16 -fb terminus-bold-16 \
+#          -e sh -c "clear && ./ufetch-fvwm && cat" 
+
+##  FVWM LOGO
+
+color="$1"
+#color='#006666'
+logo=$(mktemp --suffix=.png)
+url='http://fvwm.sourceforge.net/logo-competition/logos/Coji_Morishita/fvwm_sym_logo.png'
+wget -q "$url" -O - | convert PNG:- -quality 100% \
+    -fuzz 70% -fill gray9 -opaque '#FFFFFF' \
+    -fuzz 10% -fill "$color" -opaque '#392E6B' "$logo"
+
+printf "\e]20;${logo};30x80+4+35\a"
+
+## INFO
+
+# user is already defined
+host="$(hostname)"
+os=Debian
+kernel="$(uname -sr)"
+uptime="$(uptime -p | sed 's/up //')"
+packages="$(dpkg -l | wc -l)"
+shell="$(basename ${SHELL})"
+init=sysvinit
+if [ -z "${WM}" ]; then
+	WM="$(tail -n 1 "${HOME}/.xinitrc" | cut -d ' ' -f 2)"
+fi
+WM="FVWM 2.6.7"
+
+## DEFINE COLORS
+
+# probably don't change these
+bold="$(tput bold)"
+black="$(tput setaf 0)"
+red="$(tput setaf 1)"
+green="$(tput setaf 2)"
+yellow="$(tput setaf 3)"
+blue="$(tput setaf 4)"
+magenta="$(tput setaf 5)"
+cyan="$(tput setaf 6)"
+white="$(tput setaf 7)"
+reset="$(tput sgr0)"
+
+# you can change these
+lc="${reset}${bold}${cyan}"		# labels
+nc="${reset}${bold}${cyan}"		# user and hostname
+ic="${reset}${bold}${white}"	# info
+c0="${reset}${bold}${cyan}"		# first color
+c1="${reset}${cyan}"				# second color
+
+## OUTPUT
+
+tput civis
+cat <<EOF
+
+${c0}                     ${lc}${USER}${ic}@${lc}${host}${reset}
+${c0}                     ${lc}OS:        ${ic}${os}${reset}
+${c0}                     ${lc}KERNEL:    ${ic}${kernel}${reset}
+${c0}                     ${lc}FILESYS:   ${ic}btrfs${reset}
+${c0}                     ${lc}PACKAGES:  ${ic}${packages}${reset}
+${c0}                     ${lc}INIT:      ${ic}${init}${reset}
+${c0}                     ${lc}WM:        ${ic}${WM}${reset}
+EOF

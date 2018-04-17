@@ -1,0 +1,48 @@
+## vim: syntax=fvwm
+##  
+##  ┏┓ ┏━┓┏━┓╻ ╻┏━┓┏━╸┏━┓   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┣┻┓┣┳┛┃ ┃┃╻┃┗━┓┣╸ ┣┳┛   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ┗━┛╹┗╸┗━┛┗┻┛┗━┛┗━╸╹┗╸   ╹ ╹┗━╸╹ ╹┗━┛
+
+DestroyMenu BrowserMenu
+AddToMenu   BrowserMenu 
++ "$[infostore.icon_mm_browser]1337&x"      OpenW3m 1337x.to
++ "$[infostore.icon_mm_browser]&Ettv"       OpenW3m ettv.tv
++ "$[infostore.icon_mm_browser]&KickAss"    OpenW3m katcr.co
++ "$[infostore.icon_mm_browser]&PirateBay"  OpenW3m thepiratebay.org
++ "$[infostore.icon_mm_browser]&Forums"     OpenDilloList forums
++ "$[infostore.icon_mm_browser]&Sharetv"    OpenDilloList sharetv
++ "" Nop
++ "$[infostore.icon_mm_gvim]Edit &config"   OpenVimList browsermenu 
+
+####  FUNCTIONS
+
+##  Launcher function for dillo, where $[0] points to a list-file in $FVWM_LISTS.
+DestroyFunc OpenDilloList
+AddToFunc   OpenDilloList
++ I InfoStoreAdd list $[FVWM_LISTS]/$[0].dillo
++ I Test (!R $[infostore.list]) FF-Message 4 dillo: $[0] not found...
++ I Test (!R $[infostore.list]) Break 1
++ I Test ( R $[infostore.list]) Exec   \
+    args= ; while IFS= read filex ; do \
+    args="$args $filex " ;             \
+    done <$[infostore.list] && echo dillo $args >&2 && exec dillo $args
++ I Schedule 500 InfoStoreRemove list
+
+
+##  Urls opened as seperated w3m instances within a tmux, with the session being 
+##  attached to an urxvt terminal. $[0] is a listfile (of urls) stored in $FVWM_LISTS.
+DestroyFunc OpenW3m
+AddToFunc   OpenW3m
++ I IfNotFound w3m Break 2
++ I Next ("w3m - $[0]") WindowListFunc
++ I Any  ("w3m - $[0]") Break 1
++ I Echo Module OpenW3m $[0]
++ I Module OpenW3m $[0]
+
+DestroyModuleConfig OpenW3m: *
+*OpenW3m: Folder           $[FVWM_LISTS]
+*OpenW3m: Font             $[infostore.tamsyn20bold]
+*OpenW3m: Geometry         100x30
+
+

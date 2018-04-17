@@ -1,0 +1,200 @@
+#!/usr/bin/perl
+
+##  Module FvwmWallpaper --select --desks $[desk.n]
+##  Module FvwmWallpaper --select --all
+
+use v5.24 ;
+use strictures ;
+use warnings ;
+use feature qw(signatures) ;
+no warnings qw(experimental::signatures) ;
+
+use lib `fvwm-perllib dir`;
+use FVWM::Module;
+use Image::Magick ;             
+use Path::Tiny qw( tempfile path ) ;
+use File::chdir ;
+use Getopt::Long qw( GetOptionsFromArray ) ;
+use Env ;
+use Data::Dump qw( dump ) ;
+
+##  Establish an fvwm connection.
+my @argv = splice @ARGV, 5 ;
+my $modname = "FvwmWallpaper" ;
+my $module = new FVWM::Module( Name  => $modname ) ;
+
+##  Get desk info from the fvwm pageinfo tracker.
+my %pageinfo =  %{ $module->track("PageInfo")->data } ;
+my ($vp_height, $vp_width, $desk_current) = @pageinfo{'vp_height','vp_width','desk_n'} ;
+my $vp_aspect = $vp_width / $vp_height ;
+
+##  Fvwm event handler - store info from moduleconfig into %config.
+my %config = () ; 
+$module->addHandler(M_CONFIG_INFO, sub {
+    my ($module, $event) = @_ ;
+    if ( $event->_text =~ /^\*$modname\s*(\w+)\s+(\S.*)$/ ) {
+        my $key = $1 ; (my $foo = $2) =~ s/\s+$// ;
+        $config{$key} = $foo ;
+    }
+}) ;
+
+##  Fvwm event handler - parsing of the moduleconfig has finished. 
+$module->addHandler(M_END_CONFIG_INFO, sub { $module->terminate }) ;
+
+##  Start parsing the fvwm moduleconfig. Loop will end when done.
+$module->send("Send_ConfigInfo") ;
+$module->event_loop ;
+
+##  Load config vars from moduleconfig.
+my ( $desk_min, $desk_max, $folder_cropped, $folder_walls ) ;
+my ( $font, $geometry, $title, $rangerconf ) ;
+$desk_min       = read_config("DeskMin") ;
+$desk_max       = read_config("DeskMax") ;
+$folder_cropped = read_config("FolderCropped") ;
+$folder_walls   = read_config("FolderWallpaper") ;
+$font           = read_config("Font") ;
+$geometry       = read_config("Geometry") ;
+$rangerconf     = read_config("RangerConf") ;
+$title          = read_config("Title")  ;
+
+##  Parse the cmdline options.
+my @desks ; my ( $opt_select, $opt_all, $image ) ;
+GetOptionsFromArray( \@argv,
+    'all'         => \$opt_all, 
+    'select'      => \$opt_select, 
+    'image=s'     => \$image, 
+    'desks=i{1,}' => \@desks 
+)   or die "Usage: Module $modname [option]... \n" ; 
+
+##  We are putting this $image onto these @desks.
+$image = image_select() if $opt_select ;
+@desks = ($desk_min..$desk_max) if $opt_all ;
+
+# dump \@desks ;
+
+##  Sanity tests
+die "$modname: Usage: Module $modname [options]... \n" unless $opt_all or @desks ;
+die "$modname: Usage: Module $modname [options]... \n" unless $opt_select or $image ;
+die "$modname: option --image filename not found\n" unless -r $image ;
+die "$modname : rangerconf folder not found $!"     unless -d $rangerconf ;
+die "$modname : cropped folder not found $!"        unless -d $folder_cropped ;
+die "$modname : wallpaper folder not found $!"      unless -d $folder_walls ;
+
+##  Zoom, crop, resize, and save to the $folder_cropped.
+my $img ;
+$img = read_image($image) ;
+$img = correct_width($img) ;
+$img = correct_height($img) ;
+$img = postbox_cropping($img) ;
+$img = resize_img($img) ;
+save_images($img) ;
+
+##  Instruct FvwmBacker to reload wallpaper colorsets, and exit. 
+system('FvwmCommand "RefreshWallpaperColorsets"') ;
+say STDERR "$modname: New wallpaper : $image" ;
+exit ;
+
+
+####  SUBROUTINES
+
+##  Read specific value from fvwm moduleconfig %config. 
+sub read_config {
+    my $key = shift ;
+    die "[$modname] $key not set" unless defined $config{$key} ;
+    return $config{$key} ;
+}
+
+sub image_select  {
+    $CWD = $folder_walls ;
+    my $catfile = tempfile() ;
+    my $cmd = "urxvt -n \"$title\" -T \"$title\" -fn $font -fb $font -b 8 -g $geometry -e " ;
+    $cmd   .= "ranger --confdir=\"$rangerconf\" --choosefile=$catfile" ;
+    readpipe $cmd ;
+    my ($file) = $catfile->lines( { chomp => 1, count => 1 } ) ;
+    return $file ;
+}
+
+##  Create an imagemagick object from an image file.
+sub read_image($img) {
+    die "$modname : cannot open image"  unless open(IMAGE, $img) ;
+    my $err = 1  ;
+    my $image = Image::Magick->New(quality => 1) ;
+    $err = $image->Read(file=>\*IMAGE) ;
+    close(IMAGE) ;
+    die "readimage : cannot read image : $img : $err" if $err ;
+    return $image ;
+}
+
+##  Returns the width, height, aspect ratio of an image.
+sub geometry($img)  {
+    my $w = $img->Get('columns') ;
+    my $h = $img->Get('rows') ;
+    my $a = $w/$h ;
+    return ($w, $h, $a) ;
+}
+
+##  If img width is too narrow then zoom.
+sub correct_width($img)  {
+    my ($width, $height, $aspect) = geometry($img) ;
+    if ( $vp_height > $height )  {
+        my $ww =  $aspect * $vp_height ;
+        my $err = $img->AdaptiveResize( width => $ww, height => $vp_height ) ;
+        die "$modname: correct_width() : FAIL : $err" if $err ;
+    }
+    return $img ;
+}
+
+##  If img height is too short then zoom.
+sub correct_height($img)  {
+    my ($width, $height, $aspect) = geometry($img) ;
+    if ( $vp_width > $width )  {
+        my $hh =  $vp_width/$aspect ;
+        my $err = $img->AdaptiveResize( width => $vp_width, height => $hh ) ;
+        die "$modname: correct_height() : FAIL : $err" if $err ;
+    }
+    return $img ;
+}
+
+##  Postbox crop to correct aspect ratio without img distortion.
+sub postbox_cropping($img)  {
+    my ($width, $height, $aspect) = geometry($img) ;
+    if ( $aspect < $vp_aspect )  {
+        my $hh = int $width/$vp_aspect  ;
+        my $yy = int ($height-$hh)/2 ;
+        my $err = $img->Crop( geometry => "${width}x$hh+0+$yy" ) ;
+        die "$modname: postbox_cropping : FAIL : $err" if $err ;
+    } elsif ( $aspect > $vp_aspect )  {
+        my $ww = int $height * $vp_aspect  ;
+        my $xx = int ($width-$ww)/2  ;
+        my $err = $img->Crop( geometry => "${ww}x$height+$xx+0" ) ;
+        die "$modname: postbox_cropping : FAIL : $err" if $err ;
+    }
+    return $img ;
+}
+
+##  Simple img resize. 
+sub resize_img($img)  {
+    my ($width, $height, $aspect) = geometry($img) ;
+    if ($vp_height < $height or $vp_width < $width)  {
+        my $err = $img->AdaptiveResize( width => $vp_width, height => $vp_height ) ;
+        die "$modname: resize_img : FAIL : $err" if $err ;
+    }
+    return $img ;
+}
+
+##  Save cropped images to the cropped folder.
+sub save_images($img) {
+    my $tmpimg = tempfile( SUFFIX => '.png' ) ;
+    $tmpimg->remove ;
+    open(IMAGE, ">$tmpimg") ;
+    my $err = $img->Write(
+        file     => \*IMAGE, 
+        filename => $tmpimg, 
+        quality  => 1
+        ) ;
+    say STDERR "$modname: save_img : $err" if $err ;
+    close IMAGE ;
+    die "$modname: save_images : FAIL : file not written" unless $tmpimg->exists ;
+    $tmpimg->copy("$folder_cropped/$_.png") foreach @desks ;
+}
+

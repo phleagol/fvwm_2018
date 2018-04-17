@@ -1,0 +1,123 @@
+
+##  KDFC
+https://pbs.twimg.com/profile_images/1933919988/Twitter-Logo_400x400.png
+##  ClassicFM
+https://pbs.twimg.com/profile_images/880421524578209792/VtAnKbnE_400x400.jpg
+
+##  https://en.wikipedia.org/wiki/Unix_domain_socket
+##  https://perldoc.perl.org/perlipc.html#Bidirectional-Communication-with-Another-Process
+##  http://www.perlmonks.org/?node_id=740068
+##  https://docstore.mik.ua/orelly/perl4/prog/ch32_29.htm
+##  http://www.perlmonks.org/?node_id=303639
+##  https://stackoverflow.com/questions/14947575/what-is-wrong-with-this-iosocketunix-example
+##  https://www.geos.ed.ac.uk/~bmg/software/Perl%20Books/perlnut/ch13_02.htm
+##  https://reformatcode.com/code/perl/what-is-wrong-with-this-iosocketunix-example
+
+##  /usr/share/doc/util-linux/examples/getopt-parse.bash
+
+##  /home/phleagol/.fvwm-custom/lib/FVWM/RadioMenu.pm
+
+##  Perl Cookbook
+
+##  IO::Select 
+##  IO::Socket
+
+perl "socat" replace
+c && as perl | popsort | qand sock | lll
+m IO::Socket::UNIX
+
+man mpv | JSON IPC
+
+##  Start mpv with...
+mpv file.mkv --input-ipc-server=/tmp/mpvsocket
+
+##  See the --idle option how to make mpv start without exiting immediately or playing a file.
+
+##  Clients can execute commands on the player by sending JSON messages of the following form:
+{ "command": ["command_name", "param1", "param2", ...] }
+{ "command": ["get_property", "time-pos"], "request_id": 100 }
+
+##  Get playback time...
+echo '{ "command": ["get_property", "playback-time"] }' | socat - /tmp/mpvsocket
+
+##  Sends command but get no return string
+echo 'show-text ${playback-time}' | socat - /tmp/mpvsocket
+
+##  List of Input Commands
+playlist-next [weak|force]    Go to the next entry on the playlist.
+playlist-prev [weak|force]
+
+loadlist <playlist> [replace|append]   Load the given playlist file (like --playlist).
+playlist-clear
+
+quit [<code>]  Exit the player. If an argument is given, it's used as process exit code.
+
+
+##  Property list
+
+filename  Currently played file, with path stripped.
+path   Full path of the currently played file.
+
+playlist-pos (RW)  Current position on playlist.
+
+playlist-count  Number of total playlist entries.
+
+playlist-pos, chapter
+These properties behave different from the deprecated options with the same names.
+
+
+
+
+playlist/N/current, playlist/N/playing
+
+##  Find current playlist position
+echo '{ "command": ["get_property", "playlist-pos"] }' | socat - /tmp/mpvsocket
+{"data":21,"error":"success"}
+
+echo '{ "command": ["get_property", "playlist/21/current"] }' | socat - /tmp/mpvsocket
+
+
+echo '{ "command": ["get_property", "playlist/21/playing"] }' | socat - /tmp/mpvsocket
+{"data":true,"error":"success"}
+
+##  get current playlist position
+c && echo '{ "command": ["get_property", "playlist-pos"] }' | socat - /tmp/mpvsocket
+{"data":21,"error":"success"}
+
+##  Writing to the property will restart playback at the written entry.
+c && echo '{ "command": ["set_property", "playlist-pos", 10] }' | socat - /tmp/mpvsocket
+
+##  Set playlist and track number
+echo "loadlist $HOME/.fvwm-custom/playlists/strings-yt1.m3u replace" | socat - /tmp/mpvsocket
+echo 'no-osd set playlist-pos 11' | socat - /tmp/mpvsocket
+
+
+
+idle-active    Return  yes  if  no  file  is loaded, but the player is staying around because of the --idle
+
+paused-for-cache    Returns yes when playback is paused because of waiting for the cache.
+
+set pause yes
+{ "command": ["set_property", "pause", true] }
+
+echo '{ "command": ["get_property", "pause"] }' | socat - /tmp/mpvsocket
+{"data":false,"error":"success"}
+
+c && echo '{ "command": ["set_property", "pause", true] }' | socat - /tmp/mpvsocket
+c && echo '{ "command": ["set_property", "pause", false] }' | socat - /tmp/mpvsocket
+
+
+c && echo '{ "command": ["stop"] }' | socat - /tmp/mpvsocket
+echo '{ "command": ["get_property", "idle-active"] }' | socat - /tmp/mpvsocket
+{"data":true,"error":"success"}
+
+mpv status :  none | stop | pause | play
+
+##  idle active not changed by pausing. Only by "stop"
+
+--heartbeat-cmd=<command>    Command that is executed every 30 seconds during playback via
+
+
+
+
+

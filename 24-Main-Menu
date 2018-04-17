@@ -1,0 +1,208 @@
+## vim: sts=0:noet:syntax=fvwm:foldmethod=marker
+##  
+##  ┏┳┓┏━┓╻┏┓╻   ┏┳┓┏━╸┏┓╻╻ ╻
+##  ┃┃┃┣━┫┃┃┗┫   ┃┃┃┣╸ ┃┗┫┃ ┃
+##  ╹ ╹╹ ╹╹╹ ╹   ╹ ╹┗━╸╹ ╹┗━┛
+
+
+DestroyMenu MainMenu
+AddToMenu   MainMenu 
++ "$[infostore.icon_mm_iceweasel]&Firefox"    OpenFirefox 
++ "$[infostore.icon_mm_palemoon]P&aleMoon"    OpenPaleMoon 
++ "$[infostore.icon_mm_mpv]Mp&v"              MpvWarp
++ "$[infostore.icon_mm_email]&Email"          OpenEmail
++ "$[infostore.icon_mm_hexchat]&Hexchat"      OpenHexchat
++ "$[infostore.icon_mm_rss_feeds]&News"       OpenFeeds 
++ "$[infostore.icon_mm_passwords]&Pass"       OpenPass
++ "$[infostore.icon_mm_transmission]&Binge"   OpenBinge
++ "$[infostore.icon_mm_ncmpcpp]N&cmpcpp"      OpenNcmpcpp
++ "" Nop
++ "$[infostore.icon_mm_gvim]V&im	>"         Popup VimMenu
++ "$[infostore.icon_mm_urxvt]Urxv&t	>"        Popup TermMenu
++ "$[infostore.icon_mm_browser]&W3m	>"  Popup BrowserMenu
+#+ "$[infostore.icon_mm_dillo]&W3m/Dillo"  Popup W3mMenu
+#+ "$[infostore.icon_mm_gvim]N&otes"       Popup NotesMenu
++  "$[infostore.icon_mm_config]Dot&s	>" Popup DotfilesMenu
++ "$[infostore.icon_mm_system_menu]FVW&M	>" Popup DesktopMenu
++ "$[infostore.icon_mm_debian]Xd&g	>"       Popup MyXdgMenu
++ "" Nop
+# + "$[infostore.icon_mm_locked]&Lock	>" Popup LockMenu
++ "$[infostore.icon_mm_exit_menu]E&xit	>" Popup ExitMenu
+
+
+DestroyMenu DotfilesMenu
+AddToMenu   DotfilesMenu 
++ "$[infostore.icon_mm_gvim]&Bash" OpenVim bashrc \
+      "$[HOME]/.bashrc" \
+      "$[HOME]/.bash_aliases" 
++ "$[infostore.icon_mm_gvim]&Conky" OpenVim conkyrc \
+    "$[FVWM_USERDIR]/bar/conkyrc" \
+    "$[FVWM_USERDIR]/bar/drawlines.lua"
++ "$[infostore.icon_mm_gvim]&Mpv" OpenVim "~/.config/mpv/mpv.conf" \
+      "$[HOME]/.config/mpv/mpv.conf" 
++ "$[infostore.icon_mm_gvim]Ncmpcpp" OpenVim "~/.ncmpcpp/config" \
+      "$[HOME]/.ncmpcpp/config" 
++ "$[infostore.icon_mm_gvim]&Newsbeuter" OpenVim "~/.newsbeuter/urls" \
+      "$[HOME]/.newsbeuter/urls"  \
+      "$[HOME]/.newsbeuter/config"
++ "$[infostore.icon_mm_gvim]&Pal" OpenVim  "~/.pal/pal.conf" \
+    "$[HOME]/.pal/torrents.pal" \
+    "$[HOME]/.pal/yearly.pal" \
+    "$[HOME]/.pal/birthdays.pal" \
+    "$[HOME]/.pal/dates.pal" \
+    "$[HOME]/.pal/pal.conf" 
++ "$[infostore.icon_mm_gvim]&Ranger" OpenVim "~/.config/ranger/rc.conf" \
+      "$[HOME]/.config/ranger/rc.conf" \
+      "$[HOME]/.config/ranger/rifle.conf" 
++ "$[infostore.icon_mm_gvim]&Vim" OpenVim vimrc "$[HOME]/.vimrc"
++ "$[infostore.icon_mm_gvim]&sources.list" OpenSources
++ "$[infostore.icon_mm_gvim]xinitrc" OpenVim "~/.xinitrc" "$[HOME]/.xinitrc"
+
+DestroyMenu TermMenu
+AddToMenu   TermMenu
++ "$[infostore.icon_mm_bitmap]Ohsnap-14	121x39" Exec exec \
+     urxvt -g 121x39 -fg gray60 -letsp 1 -b 5 \
+    -T urxvt-ohsnap14 -n urxvt-ohsnap14  \
+    -fn $[infostore.font_tiny] -fb $[infostore.font_tiny_bold] 
++ "$[infostore.icon_mm_bitmap]Terminus-16	120x30" Exec exec \
+     urxvt -g 120x34 -fg gray60 -b 5 -T urxvt-terminus16 -n urxvt-terminus16 \
+     -fn $[infostore.font_small] -fb $[infostore.font_small_bold]
++ "$[infostore.icon_mm_bitmap]Tamsyn-20	95x27" Exec exec \
+     urxvt -g 95x27 -fg gray60 -b 5 -T urxvt-tamsyn20 -n urxvt-tamsyn20 \
+     -fn $[infostore.font_medium] -fb $[infostore.font_medium_bold]
++ "$[infostore.icon_mm_bitmap]&Dejavu-18	109x31" Exec exec \
+     urxvt -g 84x28 -fg gray60 -b 5 -T urxvt-dejavu18 -n urxvt-dejavu18   \
+    -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] 
++ "" Nop
++ "$[infostore.icon_mm_bitmap]Terminus-16	120x7" Exec exec \
+     urxvt -g 120x7 -fg gray60 -b 5 -fn $[infostore.font_small] -fb $[infostore.font_small_bold]
++ "$[infostore.icon_mm_lilyterm]&Lilyterm" Exec exec lilyterm
+#+ "$[infostore.icon_mm_xterm]Xterm" Exec exec \
+#     xterm -geometry 60x20 -fn terminus-bold-16 -fb terminus-bold-16
+
+
+####  OTHER FUNCTIONS
+
+##  MOVE : only opened from key binding.
+DestroyFunc OpenCmatrix4
+AddToFunc   OpenCmatrix4
++ I Any (cmatrix) Break 1
++ I Exec urxvt -n cmatrix -T cmatrix \
+      -fn $[infostore.font_small] -fb $[infostore.font_small_bold] \
+      -e sh -c "echo 'Please wait...' && sleep 3 && cmatrix -absxu 4" 
+
+##  MOVE : only opened from key binding.
+DestroyFunc MpvWarp
+AddToFunc   MpvWarp
++ I Next (mpv) WindowListFunc
++ I None (mpv) FF-Message 3 MPV: None found...
+
+##  MOVE : only opened from key binding.
+DestroyFunc RunDialog
+AddToFunc   RunDialog
++ I Next (fvwm-run-dialog) WindowListFunc
++ I Any  (fvwm-run-dialog) Break 1
++ I Exec exec $[FVWM_BIN]/run-dialog 
+
+DestroyFunc OpenNcmpcpp
+AddToFunc   OpenNcmpcpp
++ I IfNotFound ncmpcpp Break 2
++ I Next (ncmpcpp) WindowListFunc
++ I None (ncmpcpp) Schedule 5000 DestroyStyle ncmpcpp*
++ I None (ncmpcpp) -Exec urxvt -T ncmpcpp -n ncmpcpp -g 119x14 -bg gray9 -b 20 -lsp 4 \
+      -letsp 1 -fn $[infostore.font_tiny]  -fb $[infostore.font_tiny_bold]            \
+      -e sh -c "addcolor <$HOME/.ncmpcpp/colors && exec ncmpcpp -c $HOME/.ncmpcpp/config"
+
+DestroyFunc OpenEmail
+AddToFunc   OpenEmail
++ I IfNotFound thunderbird Break 2
++ I Test (!F /media/emails/post-hooks) \
+      FF-Message 4 "Fail: Email still locked."
++ I Test (!F /media/emails/post-hooks) Break 1
++ I Next (Thunderbird) WindowListFunc
++ I None (Thunderbird) Exec exec thunderbird 1>/dev/null 2>&1
+
+DestroyFunc OpenHexchat
+AddToFunc   OpenHexchat
++ I IfNotFound hexchat Break 2
++ I Next (Hexchat) WindowListFunc
++ I None (Hexchat) Schedule 5000 DestroyStyle Hexchat*
++ I None (Hexchat) Exec exec hexchat 1>/dev/null 2>&1
+
+##  OpenHtop not part of MainMenu. Relocate ?
+
+DestroyFunc OpenHtop
+AddToFunc   OpenHtop
++ I IfNotFound htop Break 2
++ I Next (htop) WindowListFunc
++ I None (htop) Schedule 5000 DestroyStyle htop*
++ I None (htop) Exec exec urxvt -g 98x23 -fg gray60 -b 5 -n htop -T htop \
+       -fn $[infostore.font_medium] -fb $[infostore.font_medium_bold]  \
+       -e /usr/bin/htop 1>/dev/null 2>&1
+
+#+ I Next ("~/.passwords.gpg", CirculateHit) FlipFocus
+
+DestroyFunc OpenBinge
+AddToFunc   OpenBinge
++ I IfNotFound binge Break 2
++ I Next (binge) WindowListFunc
++ I None (binge) Schedule 5000 DestroyStyle binge*
++ I None (binge) Exec exec urxvt -g 122x16 \
+      -fg gray60 -lsp 3 -letsp 1 -b 9 -n binge -T binge \
+      -fn $[infostore.font_tiny] -fb $[infostore.font_tiny_bold] \
+      -e sh -c "addcolor <$FVWM_USERDIR/xcolors/binge && binge " 
+
+DestroyFunc OpenFeeds
+AddToFunc   OpenFeeds
++ I IfNotFound newsbeuter Break 2
++ I Next (newsbeuter) WindowListFunc
++ I None (newsbeuter) Schedule 5000 DestroyStyle newsbeuter*
++ I None (newsbeuter) Test (F $[infostore.nb_lock]) FF-Message \
+      4 "Fail: Newsbeuter locked"
++ I None (newsbeuter) Test (!F $[infostore.nb_lock]) Exec exec urxvt -g 110x31 \
+      -fn $[infostore.font_large_bold] -fb $[infostore.font_large_bold] \
+      -T newsbeuter -n newsbeuter -e $[HOME]/bin/nb
+
+##  FIXME
+DestroyFunc OpenTransmission
+AddToFunc   OpenTransmission
++ I Exec pkill -f 'urxvt.*transmission-remote-cli'
++ I Schedule 6000 DestroyStyle Transmission*   
++ I Schedule 2000 Exec exec urxvt -T Transmission -n Transmission \
+   -fn $[infostore.font_medium_bold] -fb $[infostore.font_medium_bold] \
+   -g 100x30 -bg gray9 -fg gray60 -e sh -c \
+    "addcolor <$FVWM_USERDIR/xcolors/trcli && exec transmission-remote-cli"
+
+
+
+
+
+
+
+
+
+# DestroyFunc RunDialog
+# AddToFunc   RunDialog
+# + I Next (RunDialog) WindowListFunc
+# + I Any  (RunDialog) Break 1
+# + I -PipeRead ' jj=$(mktemp) ; \
+#     echo \'export PS1=""\\nexport HISTCONTROL="ignorespace"\\n\' 1>$jj ; \
+#     echo "InfoStoreAdd bashinit $jj" '
+# + I Exec rxvt +sb -n fvwm-run-dialog -T fvwm-run-dialog -b 10 -g 80x1 \
+#       -fn $[infostore.terminus16bold] -keysym.0xFF0D " &\n exit\n" -e \
+#       bash --init-file $[infostore.bashinit]
+# + I Schedule 2000 Exec rm $[infostore.bashinit] 2>/dev/null 
+# + I Schedule 2500 InfoStoreRemove bashinit
+
+# DestroyFunc RunDialog
+# AddToFunc   RunDialog
+# + I Next (RunDialog) WindowListFunc
+# + I Any  (RunDialog) Break 1
+# + I -PipeRead ' jj=$(mktemp) ; \
+#     echo \'export PS1=""\\nexport HISTCONTROL="ignorespace"\\n\' 1>$jj ; \
+#     echo "SetEnv BASHINIT $jj" '
+# + I Schedule 500 Exec rxvt +sb -n fvwm-run-dialog -T fvwm-run-dialog -b 10 -g 80x1 \
+#       -fn terminus-bold-16 -keysym.0xFF0D " &\n exit\n" -e \
+#       bash --init-file $BASHINIT
+# + I Schedule 2000 Exec rm $BASHINIT 2>/dev/null 
+# + I Schedule 2500 UnsetEnv BASHINIT

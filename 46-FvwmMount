@@ -1,0 +1,78 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓   ┏┳┓┏━┓╻ ╻┏┓╻╺┳╸
+##  ┣╸ ┃┏┛┃╻┃┃┃┃   ┃┃┃┃ ┃┃ ┃┃┗┫ ┃ 
+##  ╹  ┗┛ ┗┻┛╹ ╹   ╹ ╹┗━┛┗━┛╹ ╹ ╹ 
+##
+##  FvwmMount - mounts usb-drives and/or encrypted tombs 
+##  https://github.com/dyne/Tomb
+
+DestroyModuleConfig FvwmMount *
+*FvwmMount: MenuTitle               Mount Menu
+*FvwmMount: MenuName                FvwmMount_YadaYada
+*FvwmMount: AptUpdateFile           $[HOME]/.apt_update
+*FvwmMount: TombFolder              $[HOME]/tomb
+*FvwmMount: MountFolder             /media
+
+DestroyFunc VfatMount
+AddToFunc   VfatMount
++ I DebugEcho VfatMount "$[0]" "$[1]" "$[2]" "$[3]"
++ I Exec pmount "$[0]" "$[1]"
++ I Schedule 2000 VfatMountNotify "$[0]" "$[1]"
+
+DestroyFunc VfatMountNotify
+AddToFunc   VfatMountNotify
++ I DebugEcho VfatMountNotify "$[0]" "$[1]"
++ I InfoStoreAdd mount fail
++ I PipeRead 'mountpoint "$[1]" 2>/dev/null 1>&2 && echo "InfoStoreAdd mount pass" '
++ I Test (EnvMatch infostore.mount pass) FF-Message 3 Mount passed : $[1]
++ I Test (EnvMatch infostore.mount pass) Exec echo -n $[1] | xsel -ib
++ I Test (EnvMatch infostore.mount fail) FF-Message 3 Mount failed : $[0]
++ I InfoStoreRemove mount
+
+DestroyFunc VfatUnmount
+AddToFunc   VfatUnmount
++ I DebugEcho VfatUnmount "$[0]" "$[1]" "$[2]" "$[3]"
++ I Exec pkill xsel ; pumount "$[0]" 
++ I Schedule 2000 VfatUnmountNotify "$[0]" "$[1]"
+
+DestroyFunc VfatUnmountNotify
+AddToFunc   VfatUnmountNotify
++ I DebugEcho VfatUnmountNotify "$[0]" "$[1]" "$[2]" "$[3]"
++ I InfoStoreAdd mount fail
++ I PipeRead 'mountpoint "$[1]" 2>/dev/null 1>&2 && echo "InfoStoreAdd mount pass" '
++ I Test (EnvMatch infostore.mount fail) FF-Message 3 Umount passed : $[1]
++ I Test (EnvMatch infostore.mount pass) FF-Message 3 Umount failed : $[0]
++ I InfoStoreRemove mount
+
+DestroyFunc TombMount
+AddToFunc   TombMount 
++ I Exec urxvt -b 8 -T "Tomb Mount" -n "Tomb Mount" -e \
+    sh -c " tomb open \"$[0]\" -k \"$[1]\" -f "
+
+DestroyFunc TombUmount
+AddToFunc   TombUmount 
++ I DebugEcho Exec sudo tomb close "$[2]" 1>/dev/null 2>&1 
++ I Exec sudo tomb close "$[2]" 1>/dev/null 2>&1 
++ I Schedule 3000 TombUmountNotify "$[3]"
+
+DestroyFunc TombUmountNotify
+AddToFunc   TombUmountNotify 
++ I DebugEcho TombUmountNotify "$[0]" "$[1]" "$[2]" "$[3]"
++ I InfoStoreAdd mount fail
++ I PipeRead 'mountpoint "$[0]" 2>/dev/null 1>&2 && echo "InfoStoreAdd mount pass" '
++ I Test (EnvMatch infostore.mount fail) FF-Message 3 Tomb Unmount : $[0]
++ I Test (EnvMatch infostore.mount pass) FF-Message 3 Umount failed : $[0]
++ I InfoStoreRemove mount
+
+DestroyFunc TombSlam
+AddToFunc   TombSlam 
++ I Exec sudo tomb close all 
++ I Schedule 2000 Exec sudo tomb slam  all
+
+DestroyFunc AptUpdate
+AddToFunc   AptUpdate
++ I Exec exec urxvt -g 120x25 -b 7 -T "apt update" -n "apt update" \
+      -fn $[infostore.font_small_bold] -e $[FVWM_BIN]/apt-update.sh
+
+

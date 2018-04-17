@@ -1,0 +1,86 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓   ┏┳┓╻ ╻┏━┓╻┏━╸
+##  ┣╸ ┃┏┛┃╻┃┃┃┃   ┃┃┃┃ ┃┗━┓┃┃  
+##  ╹  ┗┛ ┗┻┛╹ ╹   ╹ ╹┗━┛┗━┛╹┗━╸
+
+InfoStoreAdd m3u_playlist radio-01.m3u
+InfoStoreAdd m3u_folder   $[FVWM_USERDIR]/playlists
+
+DestroyModuleConfig FvwmMusic: *
+*FvwmMusic: MenuName      MusicMenu
+*FvwmMusic: SubMenuName   PlaylistMenu
+*FvwmMusic: Folder        $[infostore.m3u_folder]
+
+DestroyFunc MusicEdit
+AddToFunc   MusicEdit 
++ I Echo MusicEdit ...
++ I PipeRead ' \
+      jj="$[FVWM_LISTS]/playlists.vim" ; rm "$jj" 2>/dev/null ; \
+      find $[infostore.m3u_folder] -maxdepth 1 -type f -name "*.m3u" | sort >"$jj" 2>/dev/null ;'
++ I OpenVimList playlists
+
+DestroyFunc MusicStop 
+AddToFunc   MusicStop 
++ I Echo MusicStop ...
++ I Exec $[FVWM_BIN]/musicplay.sh --stop
+
+DestroyFunc MusicNext 
+AddToFunc   MusicNext 
++ I Echo MusicNext ...
++ I Exec $[FVWM_BIN]/musicplay.sh --next
+#+ I Next (mpvd) Schedule 2000 Echo MusicNotify  $[w.name]
++ I Next (mpvd) Schedule 2000 MusicNotify
+
+DestroyFunc MusicPrev 
+AddToFunc   MusicPrev 
++ I Echo MusicPrev ...
++ I Exec $[FVWM_BIN]/musicplay.sh --prev
+#+ I Next (mpvd) Schedule 2000 Echo MusicNotify  $[w.name]
++ I Next (mpvd) Schedule 2000 MusicNotify
+
+DestroyFunc MusicNotify 
+AddToFunc   MusicNotify I ThisWindow FF-Message 3 $[w.name]
+
+#+ I ThisWindow Echo MusicNotify  $[w.name]
+#+ I Next (mpvd) FF-Message 3 $[w.name]
+
+DestroyFunc MusicToggle 
+AddToFunc   MusicToggle 
++ I Echo MusicToggle ...
++ I Exec $[FVWM_BIN]/musicplay.sh --toggle 
+
+##  --playlist $[infostore.m3u_folder]/$[infostore.m3u_playlist]
+
+DestroyFunc MusicPlay 
+AddToFunc   MusicPlay 
++ I Echo MusicPlay : $[*]
+#+ I Echo $[FVWM_BIN]/musicplay.sh --play $[0] --playlist $[1]
++ I Exec $[FVWM_BIN]/musicplay.sh --play $[0] --playlist $[1]
++ I InfoStoreAdd musictitle :$[2-]:
++ I Test (!EnvMatch infostore.musictitle ::) FF-Message 4 MPV : $[2-]
+#+ I Test (!EnvMatch infostore.musictitle ::) Echo FF-Message 4 $[2-]
++ I InfoStoreRemove musictitle
+
+DestroyFunc ChangePlaylist 
+AddToFunc   ChangePlaylist 
++ I Echo ChangePlaylist...
++ I MusicStop
++ I InfoStoreAdd m3u_playlist $[0]
++ I SaveSettings
++ I Schedule 1000 MusicMenu
+
+DestroyFunc MusicMenu
+AddToFunc   MusicMenu 
++ I -PipeRead 'echo "Message 3 $(date +%A,\\ %R)" ;'
++ I Schedule 300 Module FvwmMusic $[infostore.m3u_playlist]
+
+#  ##  Music playback, radio or mpd.  !! MOVED TO KEY BINDINGS !!
+#  Key R      A   4 MusicMenu
+#  Key period A   4 MusicNext
+#  Key comma  A   4 MusicPrev
+#  Key slash  A   4 MusicToggle
+#  Key slash  A  S4 MusicStop
+
+
+

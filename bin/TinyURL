@@ -1,0 +1,87 @@
+#!/usr/bin/perl
+
+use v5.24 ;
+use utf8 ;
+use strictures ;
+use warnings ;
+
+use lib `fvwm-perllib dir` ;
+use FVWM::Module ;
+# use Syntax::Keyword::Try ;
+use IPC::Run qw( run timeout ) ;
+use WWW::Shorten::TinyURL;
+use WWW::Shorten 'TinyURL';
+
+my $modname = "TinyURL" ;
+my $module = new FVWM::Module(
+    Name => $modname,
+    Debug => 0,
+);
+
+##  Fetch url from clipboard.
+my $url = xsel_read() ;
+die "$modname: valid url not found" unless defined $url ;
+die "$modname valid url not found" unless $url =~ m{^http[s]?://} ;
+
+##  Shorten url
+my $short_url = makeashorterlink($url) ;
+die "$modname: returned url invalid" unless $short_url =~ m{^http[s]?://tinyurl} ;
+
+##  Push the true url to clipboard and notify.
+if (xsel_write($short_url) ) {
+    my $msg = "FF-Message 4 $modname: $short_url" ;
+    sendcmd($msg) ;
+} else {
+    say STDERR "xsel_write failed" ;
+}
+
+exit ;
+
+##  Get latest entry from clipboard, and return its md5 hash value.
+sub xsel_read  {
+    my ($in, $out, $err) = ("", 0, 1) ;
+    my @cmd1 = ("xsel", "-ob") ;
+    run \@cmd1, \$in, \$out, \$err, timeout(2) ;
+    # try { run \@cmd1, \$in, \$out, \$err, timeout(2) } 
+    # catch { return undef } ;
+    return $err ? undef : $out ;
+}
+
+
+sub xsel_write  {
+    my $in = shift ;
+    my ($out, $err) = (0, 1) ;
+    my @cmd = ("pkill", "xsel") ;
+    eval { run \@cmd, timeout(2) } ;
+    @cmd = ("xsel", "-ib") ;
+    run \@cmd, \$in, \$out, \$err, timeout(2) ;
+    #try {run \@cmd, \$in, \$out, \$err, timeout(2)} 
+    #catch { return } ;
+    return 1 ;
+}
+
+sub sendcmd {
+    foreach ( @_ ) { 
+        $module->send($_) ;
+        $module->show_message($_) ;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

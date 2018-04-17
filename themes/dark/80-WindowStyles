@@ -1,0 +1,7 @@
+## vim: syntax=fvwm
+
+
+#Style ufetch Title, State $[infostore.state_titledwindow] 
+
+
+

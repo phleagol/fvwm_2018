@@ -1,0 +1,86 @@
+#EXTM3U
+#EXTINF:-1,Classic FM
+#EXTLABEL:Classic FM
+#EXTWEBSITE:http://www.classicfm.com/radio/playlist/
+http://media-ice.musicradio.com/ClassicFMMP3.m3u
+#EXTINF:-1,KDFC Classical
+#EXTLABEL:KDFC Classical
+#EXTWEBSITE:http://www.kdfc.com
+http://18303.live.streamtheworld.com:80/KDFCFMAAC_SC
+#EXTINF:-1,The Station
+#EXTLABEL:The Station
+#EXTWEBSITE:http://theclassicalstation.org/playing_wed.shtml
+http://www.ibiblio.org/wcpe/wcpe.pls
+#EXTINF:-1,All Classical
+#EXTLABEL:All Classical
+#EXTWEBSITE:http://www.allclassical.org
+http://allclassical-ice.streamguys.com/ac96k.m3u
+#EXTINF:-1,ABC Classic 2
+#EXTLABEL:ABC Classic 2
+#EXTWEBSITE:http://abcclassic2.tumblr.com/
+http://abc2.ihrcast.arn.com.au/iHRabc08
+#EXTINF:-1,Venice Classical
+#EXTLABEL:Venice Classical
+#EXTWEBSITE:http://www.veniceclassicradio.eu/en/
+http://109.123.116.202:8010/stream
+#EXTINF:-1,BBC Radio 3
+#EXTLABEL:BBC Radio 3
+#EXTWEBSITE:http://www.bbc.co.uk/radio3
+http://www.surfmusic.de/m3u/bbc-radio-3,1945.m3u
+#EXTINF:-1,WKSU Classical
+#EXTLABEL:WKSU Classical
+#EXTWEBSITE:http://wksu.org/wksu-classical-playlist/
+http://www.wksu.org/listen/wksu3.pls
+#EXTINF:-1,Swiss Classical
+#EXTLABEL:Swiss Classical
+#EXTWEBSITE:http://swissradio.ch/menu/classical/classical.htm
+http://swissradio.ch/streams/6034.m3u
+#EXTINF:-1,KUSC Classical 
+#EXTLABEL:KUSC Classical
+#EXTWEBSITE:http://www.kusc.org/
+http://14993.live.streamtheworld.com:80/KUSCAAC64_SC
+#EXTINF:-1,Kings Classical 
+#EXTLABEL:Kings Classical
+#EXTWEBSITE:http://www.king.org/music-schedule/
+http://icy2.abacast.com/king-kingmobile-48
+#EXTINF:-1,RadioNZ Concert
+#EXTLABEL:RadioNZ Concert
+#EXTWEBSITE:http://www.radionz.co.nz/concert
+http://ihrcast1.radiomyway.co.nz/rnz-concert
+#EXTINF:-1,RadioNZ National
+#EXTLABEL:RadioNZ National
+#EXTWEBSITE:http://www.radionz.co.nz/national
+http://ihrcast1.radiomyway.co.nz/rnz-national
+#   #EXTINF:-1,ABC Classic FM
+#   #EXTLABEL:ABC Classic FM    NOT ALWAYS CLASSICAL
+#   #EXTWEBSITE:http://radio.abc.net.au/stations/classic/live
+#   http://abc2.ihrcast.arn.com.au/iHRabc07
+#   #EXTINF:-1,New Classical
+#   #EXTLABEL:New Classical
+#   #EXTWEBSITE:http://classicalfm.ca
+#   https://youtu.be/bHRwqGV5-80
+#    #EXTINF:-1,WETA Classical 
+#    #EXTLABEL:WETA Classical
+#    #EXTWEBSITE:http://www.weta.org/fm
+#    http://www.ibiblio.org/wcpe/wcpe.pls
+#   #EXTINF:-1,Klassik Radio
+#   #EXTLABEL:Klassik Radio
+#   #EXTWEBSITE:http://www.klassikradio.de/programm/was-lauft-gerade
+#   http://stream.klassikradio.de/live/mp3-192/stream.klassikradio.de/play.pls
+#   #EXTINF:-1,Stephansdom
+#   #EXTLABEL:Stephansdom
+#   #EXTWEBSITE:https://radioklassik.at/programm/sendungsdetails/#nowplaying
+#   http://streaming.lxcluster.at:8000/live128.m3u
+#   #EXTINF:-1,RTBF Musiq3
+#   #EXTLABEL:RTBF Musiq3
+#   #EXTWEBSITE:http://www.rtbf.be/musiq3/
+#   https://www.static.rtbf.be/radio/musiq3/m3u/musiq3-aac.m3u
+
+##  https://www.radioclassique.ca/pieces/
+
+#  Too many Jazz, Golden Oldies, etc.
+#  #EXTINF:-1,WQXR Classical
+#  #EXTLABEL:WQXR Classical
+#  #EXTWEBSITE:http://www.wqxr.org/
+#  https://iheart.wnyc.org/wqxr-iheart.aac
+

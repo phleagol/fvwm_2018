@@ -1,0 +1,181 @@
+## vim: syntax=fvwm
+##  
+##  ┏━╸╻ ╻╻ ╻┏┳┓   ┏━╸╻  ╻┏━┓
+##  ┣╸ ┃┏┛┃╻┃┃┃┃   ┃  ┃  ┃┣━┛
+##  ╹  ┗┛ ┗┻┛╹ ╹   ┗━╸┗━╸╹╹  
+##  
+##  FvwmClip - clipboard menu module.
+
+####   MODULECONFIG
+
+DestroyModuleConfig FvwmClip: *
+*FvwmClip: Folder           $[FVWM_CLIPS]
+*FvwmClip: Period           1
+*FvwmClip: Respawn          0
+*FvwmClip: LinkMenuName     NewUrlMenu11
+*FvwmClip: LinkMenuTitle    Url Menu11
+*FvwmClip: ClipMenuName     NewClipMenu11
+*FvwmClip: ClipMenuTitle    System FvwmClip
+*FvwmClip: ClipMenuWidth    75
+*FvwmClip: ClipMenuEntrys   20
+
+##  FIXME
+DestroyFunc StartFvwmClip
+AddToFunc   StartFvwmClip 
++ I DebugEcho StartFvwmClip
+#+ I StopClipboard
++ I StopFvwmClip
++ I Schedule 1500 Module FvwmClip
+
+#+ I Schedule Periodic 30000 $[infostore.psid_check_restart_clipboard] CheckRestartClipboard
+
+##  Shred old clipboard entries and restart clipboard.   FIXME
+DestroyFunc CleanRestartFvwmClip
+AddToFunc   CleanRestartFvwmClip
++ I DebugEcho CleanRestartFvwmClip
++ I StopFvwmClip
++ I SendToModule FvwmClip exit
++ I Schedule 500 Exec for j in $[FVWM_CLIPS]/* ; do mv "$j" "$j.old" ; done && \
+    exec shred -uzn0 $[FVWM_CLIPS]/*
++ I FF-Message 3 FvwmClip: Restarting...
++ I Schedule 2000 CheckRestartFvwmClip
+
+##  Only restart clipboard if it has already aborted.
+DestroyFunc CheckRestartFvwmClip
+AddToFunc   CheckRestartFvwmClip
++ I InfoStoreAdd noprocess 0
++ I Deschedule $[infostore.psid_check_restart_fvwmclip_2]
++ I -PipeRead ' j="$(pgrep -fc \'bin/per[l].*FvwmClip\')" ; \
+        [ $j -eq 0 ] && echo "InfoStoreAdd noprocess 1" ; '
++ I Test (EnvMatch infostore.noprocess 1) Echo CheckRestartFvwmClip : part 1
++ I Test (EnvMatch infostore.noprocess 1) \
+        Schedule 5000 $[infostore.psid_check_restart_fvwmclip_2] CheckRestartFvwmClip2
++ I InfoStoreRemove noprocess
+
+##  Restart : part 2
+DestroyFunc CheckRestartFvwmClip2
+AddToFunc   CheckRestartFvwmClip2
++ I InfoStoreAdd noprocess 0
++ I -PipeRead ' j="$(pgrep -fc \'bin/per[l].*FvwmClip\')" ; \
+        [ $j -eq 0 ] && echo "InfoStoreAdd noprocess 1" ; '
++ I Test (EnvMatch infostore.noprocess 1) Echo CheckRestartFvwmClip : part 2
++ I Test (EnvMatch infostore.noprocess 1) RestartFvwmClip
++ I InfoStoreRemove noprocess
+
+##  REDUNDANT
+DestroyFunc RestartFvwmClip
+AddToFunc   RestartFvwmClip 
++ I DebugEcho RestartFvwmClip
+#+ I StopFvwmClip
++ I StartFvwmClip
+
+DestroyFunc StopFvwmClip
+AddToFunc   StopFvwmClip
++ I DebugEcho StopFvwmClip
+#+ I Deschedule $[infostore.psid_check_restart_fvwmclip]
++ I SendToModule FvwmClip exit
++ I Schedule 100 KillModule FvwmClip
++ I Schedule 500 Exec pkill -f '/usr/bin/perl.*/FvwmClip'
+
+##  Open the clipboard menu. But if clipboard is not found, then restart. ##FIXME
+DestroyFunc OpenFvwmClip
+AddToFunc   OpenFvwmClip
+#+ I DebugEcho OpenFvwmClip
++ I InfoStoreAdd noprocess 0
++ I -PipeRead ' j="$(pgrep -fc \'bin/per[l].*FvwmClip\')" ; \
+        [ $j -eq 0 ] && echo "InfoStoreAdd noprocess 1" ; '
++ I Test (EnvMatch infostore.noprocess 0) SendToModule FvwmClip clipmenu
++ I Test (EnvMatch infostore.noprocess 1) CheckRestartFvwmClip
++ I InfoStoreRemove noprocess
+
+# ##  Open the clipboard menu. But if clipboard is not found, then restart.  FIXME
+# DestroyFunc OpenFvwmClip
+# AddToFunc   OpenFvwmClip
+# #+ I Test (!EnvMatch infostore.status_clipboard started) Break 1
+# + I InfoStoreAdd noprocess 0
+# + I -PipeRead ' j="$(pgrep -fc \'bin/per[l].*bin/FvwmClip\')" ; \
+#         [ $j -eq 0 ] && echo "InfoStoreAdd noprocess 1" ; '
+# + I Test (EnvMatch infostore.noprocess 0) SendToModule FvwmClip clipmenu
+# + I Test (EnvMatch infostore.noprocess 1) DebugEcho FvwmClip module has aborted early, not found...
+# + I Test (EnvMatch infostore.noprocess 1) RestartFvwmClip
+# + I InfoStoreRemove noprocess
+
+
+
+DestroyFunc FF-AddTorrent
+AddToFunc   FF-AddTorrent I FF-Confirm "Add\ Torrent" AddTorrent
+
+DestroyFunc AddTorrent
+AddToFunc   AddTorrent 
++ I IfNotFound transmission-remote Break 2
++ I FF-Message 4 "Torrent added..."
++ I Exec transmission-remote -a "`xsel -ob | head -1`" 
+
+DestroyFunc PasteBin
+AddToFunc PasteBin
++ I DestroyModuleConfig FF-Paste: *
++ I *FF-Paste: WarpPointer
++ I *FF-Paste: PadVText 25
++ I *FF-Paste: Title "dpaste.com"
++ I *FF-Paste: Line Center
++ I *FF-Paste: Text " Title:"
++ I *FF-Paste: Input title 40 ""
++ I *FF-Paste: Text " "
++ I *FF-Paste: Line Center
++ I *FF-Paste: Text "Author:"
++ I *FF-Paste: Input author 40 "daggoth"
++ I *FF-Paste: Text " "
++ I *FF-Paste: Line Center
++ I *FF-Paste: Button quit "Send" ^Y
++ I *FF-Paste: Command SendPaste $(author) $(title)
++ I *FF-Paste: Text " "
++ I *FF-Paste: Button quit "Quit" ^N
++ I KillModule FvwmForm FF-Paste
++ I Module FvwmForm FF-Paste
+
+DestroyFunc SendPaste
+AddToFunc SendPaste
++ I IfNotFound pastebinit Break 2
++ I SetEnv MODE text
++ I -PipeRead ' \
+      j=$(xsel -ob | wc -l) ; \
+      k=$(xsel -ob | head -1) ; \
+      [ "$j" -eq 0 -a -f "$k" ] && echo "SetEnv MODE file" ;' 
++ I Test (EnvMatch MODE text) Exec \
+      xsel -ob | pastebinit -a $[0] -b dpaste.com -t "$[1-]" | xsel -ib 
++ I Test (EnvMatch MODE file) Exec \
+      pastebinit -i "$(xsel -ob)" -a $[0] -b dpaste.com -t "$[1]" | xsel -ib
++ I UnsetEnv MODE
+
+DestroyFunc ListOpenFiles
+AddToFunc   ListOpenFiles
++ I IfNotFound lsof Break 2
++ I Exec kk="$[FVWM_TMP]/lsof" ; >"$kk" ; \
+      lsof +D "$(xsel -ob)"  1>$kk 2>&1 ; jj=$(wc -l <$kk) ; jj=$((jj+5)) ; \
+      exec urxvt -T lsof -n lsof -b 8 -bg gray9 -g 140x$jj \
+      -fn $[infostore.font_small_bold] -fb $[infostore.font_small_bold] -e sh -c ' \
+      echo "Files still open in folder : $(xsel -ob)..." ; echo ; cat $[FVWM_TMP]/lsof ; \
+      echo ; echo "Press ctrl-C to exit" ; sleep 600 ; '
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

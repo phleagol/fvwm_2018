@@ -1,0 +1,31 @@
+## vim: syntax=fvwm
+
+##  http://fvwmforums.org/wiki/Config/Colorsets/
+
+##  Default colorset.
+DefaultColorset $[infostore.cs_default]
+Colorset        $[infostore.cs_default] fg white, bg darkgrey
+
+# ##  Decor colorsets.
+# Colorset $[infostore.cs_decor_inactive]        fg gray70, bg gray20
+# Colorset $[infostore.cs_decor_active]          fg gray70, bg gray20
+# Colorset $[infostore.cs_decor_border_inactive] bg gray20
+# Colorset $[infostore.cs_decor_border_active]   bg gray35
+
+# ##  Menu colorsets.
+# Colorset $[infostore.cs_menu_inactive] fg gray55, bg gray9,  sh gray25, hi gray25
+# Colorset $[infostore.cs_menu_active]   fg gray55, bg gray20, sh gray25, hi gray25
+# Colorset $[infostore.cs_menu_title]    fg gray55, bg gray9,  sh gray25, hi gray25
+
+##  Icon background colorset
+# Colorset $[infostore.cs_icon_bg] sh gray25, hi gray25
+
+# HilightIconTitleColorset
+# IconTitleColorset
+
+##  FvwmIdent
+Colorset $[infostore.cs_fvwmident] fg grey60, bg gray9
+
+
+
+
